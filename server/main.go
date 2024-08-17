@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ type SearchUnitsWikiResponse struct {
 type SearchUnitsResponse struct {
 	MovementType int    `json:"mvt"`
 	WeaponType   int    `json:"wpn"`
-	ID           string `json:"id"`
+	ID           int    `json:"id"`
 	Name         string `json:"name"`
 }
 
@@ -207,8 +208,9 @@ func searchHeroes(response http.ResponseWriter, request *http.Request) {
 		searchResponse := make([]SearchUnitsResponse, len(unmarshaled.CargoQuery))
 
 		for i, entry := range unmarshaled.CargoQuery {
+			integerId, _ := strconv.Atoi(entry.Title.IntID)
 			searchResponse[i] = SearchUnitsResponse{
-				ID:           entry.Title.IntID,
+				ID:           integerId,
 				Name:         entry.Title.Page,
 				WeaponType:   WEAPON_TYPES[entry.Title.WeaponType],
 				MovementType: MOVEMENT_TYPES[entry.Title.MoveType],
