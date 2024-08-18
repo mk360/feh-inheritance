@@ -225,6 +225,52 @@ func searchHeroes(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func convertImageType(imgType string) string {
+	switch imgType {
+	case "portrait":
+		return "_Face_FC"
+	case "battle":
+		return "_BtlFace_BU"
+	}
+
+	return ""
+}
+
+func getHeroUrl(response http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	if len(request.Form["id"]) == 0 {
+		response.WriteHeader(400)
+		return
+	}
+
+	var imgType = request.Form.Get("imgType")
+
+	var query = url.Values{}
+	query.Add("action", "cargoquery")
+	query.Add("format", "json")
+	query.Add("tables", "Units")
+	query.Add("fields", "Units.WikiName=Page")
+	query.Add("where", "IntID = "+request.Form.Get("id"))
+
+	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+
+	if e != nil {
+		response.Write([]byte(""))
+		return
+	}
+
+	defer resp.Body.Close()
+
+	data, _ := io.ReadAll(resp.Body)
+	var unmarshaled SearchUnitsWikiResponse = SearchUnitsWikiResponse{}
+	json.Unmarshal(data, &unmarshaled)
+	var unitName = strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)
+	var url = "https://feheroes.fandom.com/wiki/Special:Filepath/" + url.QueryEscape(strings.Replace(unitName, ":", "", 1)) + convertImageType(imgType) + ".webp"
+	fmt.Println(url)
+	response.Header().Set("Location", url)
+	response.WriteHeader(302)
+}
+
 func main() {
 	MOVEMENT_TYPES["Infantry"] = 1
 	MOVEMENT_TYPES["Armored"] = 2
@@ -248,7 +294,9 @@ func main() {
 	mux := http.NewServeMux()
 	var inheritableSkills = http.HandlerFunc(getInheritableSkills)
 	var heroesSearch = http.HandlerFunc(searchHeroes)
+	var heroImgSearch = http.HandlerFunc(getHeroUrl)
 	mux.Handle("/skills", corsMiddleware(inheritableSkills))
 	mux.Handle("/heroes", corsMiddleware(heroesSearch))
+	mux.Handle("/img", corsMiddleware(heroImgSearch))
 	http.ListenAndServe("localhost:3333", mux)
 }
