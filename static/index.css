@@ -1,5 +1,7 @@
 :root {
     --navy-blue: #2F4C56;
+    --feh-light-blue: #00C3E5;
+    --feh-gold: #F1D99F;
 }
 
 html {
@@ -13,6 +15,7 @@ html {
     padding: 10px 6px;
     display: grid;
     border-radius: 10px;
+    overflow-y: auto;
     background: linear-gradient(to right, #648B90 0%, #2F4C56 9%, #75553C 19%, #C5A481 36%, #F1D99F 41%, #F8F1DE 49%, #F1D99F 55%, #C5A481 62%, #75553C 81%, #2F4C56 91%, #648B90);
 }
 
@@ -25,7 +28,7 @@ html {
 
 body {
     display: grid;
-    grid-template-columns: 1fr 4fr 1fr;
+    grid-template-columns: 1fr 6fr 1fr;
     height: 100%;
     width: 100%;
 }
@@ -36,6 +39,7 @@ main {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 3fr;
     row-gap: 1vh;
+    overflow: auto;
 }
 
 .searchbox {
@@ -47,19 +51,36 @@ main {
 
 .search-field {
     grid-area: 1 / 1 / 1 / 4;
+    border: none;
+    font-size: 30px;
+    border-bottom: 4px solid var(--feh-gold);
+    color: var(--feh-gold);
+    background-color: transparent;
+    outline: none;
 }
 
 .mode-switch {
     display: none;
 }
 
+.hide {
+    display: none;
+}
+
 .hero-container {
     border: none;
-    padding: 0;
-    background: none;
+    padding: 4px;
     position: relative;
     border-radius: 10px;
+    background-color: transparent;
     cursor: pointer;
+    background-size: 160px 160px;
+
+    .hero-frame {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+    }
 
     &:focus, &:hover {
         .hero-frame {
@@ -72,6 +93,86 @@ main {
     display: grid;
     grid-template-columns: repeat(6, 160px);
     grid-auto-rows: 160px;
-    column-gap: 1vw;
-    row-gap: 1vh;
+    column-gap: 3vw;
+    row-gap: 2vh;
+    overflow-y: scroll;
+}
+
+#search-results:not(.hide) {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    min-height: 100px;
+    max-height: 400px;
+    overflow-y: scroll;
+    width: 600px;
+    background-color: var(--navy-blue);
+    border-radius: 10px;
+    border: 3px solid var(--feh-light-blue);
+    left: 13%;
+    top: 20%;
+    z-index: 2;
+}
+
+.search-entry {
+    background-color: transparent;
+    display: flex;
+    border: none;
+    outline: 1px solid var(--navy-blue);
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr;
+    cursor: pointer;
+    align-items: center;
+
+    img {
+        height: 80px;
+        width: 80px;
+    }
+
+    span {
+        flex: 1;
+        color: white;
+    }
+
+    &:hover, &:focus {
+        outline-color: var(--feh-light-blue);
+        background-color: var(--feh-light-blue);
+    }
+}
+
+#inheritable-skills {
+    max-height: 80vh;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+
+    &::backdrop {
+        background-color: black;
+        opacity: 0.4;
+    }
+}
+
+.skills-modal {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 5fr;
+    overflow: auto;
+}
+
+.skill-filters {
+    display: flex;
+    justify-content: space-evenly;
+    gap: 1vw;
+}
+
+.skill-filter {
+    display: none;
+
+    &#weapon:checked + .filter-weapon {
+        color: red;
+    }
+
+    &#assist:checked + .filter-assist {
+        color: red;
+    }
 }

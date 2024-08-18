@@ -3,7 +3,6 @@ package main
 // example query : curl "http://localhost:3333/skills?searchedId=112&intIDs=112&intIDs=213&mode=roster&slot=C"
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -59,7 +58,7 @@ func convertSlotName(slot string) string {
 	}
 }
 
-func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string) {
+func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string) []byte {
 	var query = url.Values{}
 	query.Set("action", "cargoquery")
 	query.Set("format", "json")
@@ -91,13 +90,11 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 
 	} else {
 		query.Set("tables", "Units, UnitSkills, Skills")
-		query.Set("fields", "Skills.Name, Units._pageName=Unit")
+		query.Set("fields", "Skills.Name, Units._pageName=Unit, IntID")
 		query.Set("join_on", "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName")
 		query.Set("order_by", "Skills.Name ASC, Unit ASC")
 		query.Set("limit", "500")
 		query.Set("where", strings.Join(conditions, " and "))
-
-		fmt.Println(query.Get("where"))
 
 		resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
 
@@ -107,8 +104,12 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 
 		defer resp.Body.Close()
 
-		// data, _ := io.ReadAll(resp.Body)
+		data, _ := io.ReadAll(resp.Body)
+
+		return data
 	}
+
+	return []byte("")
 }
 
 func filterOut(arr []string, el string) []string {
@@ -171,7 +172,9 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, weapon, assist or special\n"))
 	}
 
-	inheritableSkillsRequest(req.Form["intIDs"], req.Form["searchedId"][0], req.Form["slot"][0])
+	var x = inheritableSkillsRequest(req.Form["intIDs"], req.Form["searchedId"][0], req.Form["slot"][0])
+
+	response.Write(x)
 }
 
 func searchHeroes(response http.ResponseWriter, request *http.Request) {
@@ -185,9 +188,9 @@ func searchHeroes(response http.ResponseWriter, request *http.Request) {
 		query.Add("tables", "Units")
 		query.Add("fields", "MoveType, WeaponType, IntID, Units._pageName=Page")
 
-		var where []string = []string{"lower(Units._pageName) like \"" + searchQuery + "%\""}
-		if len(request.Form["existingIds"]) > 0 {
-			where = append(where, "IntID not in ("+strings.Join(request.Form["existingIds"], ",")+")")
+		var where []string = []string{"(lower(Units._pageName) like \"" + searchQuery + "%\" or lower(WikiName) like \"" + searchQuery + "%\")"}
+		if len(request.Form["ids"]) > 0 {
+			where = append(where, "Properties holds not \"enemy\" and IntID not in ("+strings.Join(request.Form["ids"], ",")+")")
 		}
 
 		query.Add("where", strings.Join(where, " and "))
@@ -250,7 +253,7 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	query.Add("format", "json")
 	query.Add("tables", "Units")
 	query.Add("fields", "Units.WikiName=Page")
-	query.Add("where", "IntID = "+request.Form.Get("id"))
+	query.Add("where", "Properties holds not \"enemy\" and IntID = "+request.Form.Get("id"))
 
 	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
 
@@ -266,16 +269,16 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	json.Unmarshal(data, &unmarshaled)
 	var unitName = strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)
 	var url = "https://feheroes.fandom.com/wiki/Special:Filepath/" + url.QueryEscape(strings.Replace(unitName, ":", "", 1)) + convertImageType(imgType) + ".webp"
-	fmt.Println(url)
 	response.Header().Set("Location", url)
+	response.Header().Set("Cache-Control", "max-age=604800")
 	response.WriteHeader(302)
 }
 
 func main() {
-	MOVEMENT_TYPES["Infantry"] = 1
-	MOVEMENT_TYPES["Armored"] = 2
-	MOVEMENT_TYPES["Flying"] = 3
-	MOVEMENT_TYPES["Cavalry"] = 4
+	MOVEMENT_TYPES["Infantry"] = 0
+	MOVEMENT_TYPES["Armored"] = 1
+	MOVEMENT_TYPES["Flying"] = 2
+	MOVEMENT_TYPES["Cavalry"] = 3
 
 	WEAPON_TYPES["Red Sword"] = 0
 	WEAPON_TYPES["Blue Lance"] = 1
