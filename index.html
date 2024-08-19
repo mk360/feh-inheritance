@@ -9,11 +9,14 @@
                 <div class="searchbox content">
                     <input list="search-results" id="hero-search" class="search-field" />
                     <datalist class="hide" id="search-results"></datalist>
-                    <div>
-                        <input type="radio" checked value="search" class="mode-switch" id="search" />
-                        <input type="radio" value="delete" class="mode-switch" id="delete" />
-                        <label for="search">Search Mode</label>
-                        <label for="delete">Delete Mode</label>
+                    <div class="mode-container">
+                        <input type="radio" name="app-mode" checked value="search" class="mode-switch" id="search-mode" />
+                        <label class="mode-label" for="search-mode">Search Mode</label>
+                        <div class="switch-bg">
+                            <div class="switch-circle"></div>
+                        </div>
+                        <input type="radio" name="app-mode" value="delete" class="mode-switch" id="delete-mode" />
+                        <label class="mode-label" for="delete-mode">Delete Mode</label>
                     </div>
                 </div>
             </section>
