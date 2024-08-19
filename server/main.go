@@ -3,6 +3,7 @@ package main
 // example query : curl "http://localhost:3333/skills?searchedId=112&intIDs=112&intIDs=213&mode=roster&slot=C"
 import (
 	"encoding/json"
+	"inheritance/array"
 	"io"
 	"log"
 	"net/http"
@@ -82,19 +83,6 @@ func convertSlotName(slot string) string {
 	}
 }
 
-func equalArrays(array1 []int, array2 []int) bool {
-	if len(array1) != len(array2) {
-		return false
-	}
-	for i, el := range array1 {
-		if array2[i] != el {
-			return false
-		}
-	}
-
-	return true
-}
-
 func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string) []byte {
 	var query = url.Values{}
 	query.Set("action", "cargoquery")
@@ -120,14 +108,14 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 
 	var conditions []string = []string{"Next is null", "Units.Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Units.Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\""}
 
-	var withoutSelf = filterOut(intIDs, searchedIntID)
+	var withoutSelf = array.FilterOut(intIDs, searchedIntID)
 	conditions = append(conditions, "IntID in ("+strings.Join(withoutSelf, ",")+")")
 
 	if len(singleUnitData.CargoQuery) == 0 {
 
 	} else {
 		query.Set("tables", "Units, UnitSkills, Skills")
-		query.Set("fields", "Skills.Name, Units.WikiName=Unit, IntID, Required")
+		query.Set("fields", "Skills.Name, Units._pageName=Unit, IntID, Required")
 		query.Set("join_on", "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName")
 		query.Set("order_by", "Skills.Name ASC, Unit ASC")
 		query.Set("limit", "500")
@@ -177,7 +165,7 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 
 			currentLearners, requiredSkillExists := parsedResponse.Skills[patchedName]
 
-			if requiredSkillExists && equalArrays(currentLearners, parsedResponse.Skills[responseTitle.Title.Name]) {
+			if requiredSkillExists && array.Equals(currentLearners, parsedResponse.Skills[responseTitle.Title.Name]) {
 				delete(parsedResponse.Skills, patchedName)
 			}
 
@@ -194,27 +182,6 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 	}
 
 	return []byte("")
-}
-
-func filterOut(arr []string, el string) []string {
-	var copy []string = []string{}
-	for _, element := range arr {
-		if element != el {
-			copy = append(copy, element)
-		}
-	}
-
-	return copy
-}
-
-func includes(arr []string, el string) bool {
-	for _, element := range arr {
-		if element == el {
-			return true
-		}
-	}
-
-	return false
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -251,7 +218,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 
 	var skillsArr = []string{"A", "B", "C", "weapon", "assist", "special"}
 
-	if len(req.Form["slot"]) == 0 || !includes(skillsArr, req.Form["slot"][0]) {
+	if len(req.Form["slot"]) == 0 || !array.Includes(skillsArr, req.Form["slot"][0]) {
 		response.WriteHeader(400)
 		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, weapon, assist or special\n"))
 	}
@@ -351,8 +318,7 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	data, _ := io.ReadAll(resp.Body)
 	var unmarshaled SearchUnitsWikiResponse = SearchUnitsWikiResponse{}
 	json.Unmarshal(data, &unmarshaled)
-	var unitName = strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)
-	var url = "https://feheroes.fandom.com/wiki/Special:Filepath/" + url.QueryEscape(strings.Replace(unitName, ":", "", 1)) + convertImageType(imgType) + ".webp"
+	var url = "https://feheroes.fandom.com/wiki/Special:Filepath/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
 	response.Header().Set("Location", url)
 	response.Header().Set("Cache-Control", "max-age=604800")
 	response.WriteHeader(302)
