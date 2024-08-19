@@ -4,15 +4,28 @@
     const MOVEMENT_TYPES = ["Infantry", "Armored", "Flying", "Cavalry"];
     const WEAPON_TYPES = ["Red Sword", "Blue Lance", "Green Axe", "Colorless Staff"];
     const BARRACKS = document.getElementById("barracks");
-    const HERO_SEARCH = document.getElementById("hero-search");
-    const SEARCH_RESULTS = document.getElementById("search-results");
+    const TABS = document.querySelectorAll('input[name="tab"]');
+    // const HERO_SEARCH = document.getElementById("hero-search");
+    // const SEARCH_RESULTS = document.getElementById("search-results");
     const SKILLS_DIALOG = document.getElementById("inheritable-skills");
 
     // SKILLS_DIALOG.oncancel = function(e) {
     //     e.preventDefault();
     // }
 
-    const controller = new AbortController();
+    for (let tab of TABS) {
+        tab.onchange = function() {
+            const { id } = this;
+            const tabsContainers = document.querySelectorAll(".tab-content");
+            for (let container of tabsContainers) {
+                if (container.id.includes(id)) {
+                    container.classList.remove("hide");
+                } else {
+                    container.classList.add("hide");
+                }
+            }
+        }
+    }
 
     function getButton(element) {
         let node = element;
@@ -33,37 +46,37 @@
         fetch(`http://localhost:3333/skills?slot=A&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => res.json()).then(console.log)
     }
 
-    SEARCH_RESULTS.onclick = (e) => {
-        const btn = getButton(e.target);
-        const { unitId } = btn.dataset;
-        createBarracksItem(unitId);
-        localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY)).concat(+unitId)));
-        while (SEARCH_RESULTS.childNodes.length) SEARCH_RESULTS.removeChild(SEARCH_RESULTS.firstChild);
-        SEARCH_RESULTS.classList.add("hide");
-    }
+    // SEARCH_RESULTS.onclick = (e) => {
+    //     const btn = getButton(e.target);
+    //     const { unitId } = btn.dataset;
+    //     createBarracksItem(unitId);
+    //     localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY)).concat(+unitId)));
+    //     while (SEARCH_RESULTS.childNodes.length) SEARCH_RESULTS.removeChild(SEARCH_RESULTS.firstChild);
+    //     SEARCH_RESULTS.classList.add("hide");
+    // }
     
-    HERO_SEARCH.onkeyup = (e) => {
-        const value = e.target.value;
-        if (value.length < 3) {
-            SEARCH_RESULTS.classList.add("hide");
-            return;
-        }
-        const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
-        const urlSearchParams = new URLSearchParams();
-        urlSearchParams.set("query", encodeURIComponent(value));
-        for (let id of existingIds) {
-            urlSearchParams.append("ids", id);
-        }
-        fetch(`http://localhost:3333/heroes?${urlSearchParams.toString()}`, {
-            signal: controller.signal
-        }).then((response) => response.json()).then((entries) => {
-            while (SEARCH_RESULTS.childNodes.length) SEARCH_RESULTS.removeChild(SEARCH_RESULTS.firstChild);
-            SEARCH_RESULTS.classList.remove("hide");
-            for (let entry of entries) {
-                createSearchItem(entry);
-            }
-        }).catch(() => {});
-    }
+    // HERO_SEARCH.onkeyup = (e) => {
+    //     const value = e.target.value;
+    //     if (value.length < 3) {
+    //         SEARCH_RESULTS.classList.add("hide");
+    //         return;
+    //     }
+    //     const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
+    //     const urlSearchParams = new URLSearchParams();
+    //     urlSearchParams.set("query", encodeURIComponent(value));
+    //     for (let id of existingIds) {
+    //         urlSearchParams.append("ids", id);
+    //     }
+    //     fetch(`http://localhost:3333/heroes?${urlSearchParams.toString()}`, {
+    //         signal: controller.signal
+    //     }).then((response) => response.json()).then((entries) => {
+    //         while (SEARCH_RESULTS.childNodes.length) SEARCH_RESULTS.removeChild(SEARCH_RESULTS.firstChild);
+    //         SEARCH_RESULTS.classList.remove("hide");
+    //         for (let entry of entries) {
+    //             createSearchItem(entry);
+    //         }
+    //     }).catch(() => {});
+    // }
 
     for (let color of ["Red", "Blue", "Green", "Colorless"]) {
         for (let weapon of ["Bow", "Tome", "Breath", "Beast", "Dagger"]) {

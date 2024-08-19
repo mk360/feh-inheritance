@@ -5,6 +5,16 @@
     --delete-red: #721717;
 }
 
+@font-face {
+    font-family: "Inter";
+    src: url("./inter.ttf");
+}
+
+* {
+    font-family: Inter;
+    scrollbar-color: var(--feh-gold) var(--navy-blue);
+}
+
 html {
     background-image: url("./bg.webp");
     height: 100vh;
@@ -16,8 +26,53 @@ html {
     padding: 10px 6px;
     display: grid;
     border-radius: 10px;
-    overflow-y: auto;
     background: linear-gradient(to right, #648B90 0%, #2F4C56 9%, #75553C 19%, #C5A481 36%, #F1D99F 41%, #F8F1DE 49%, #F1D99F 55%, #C5A481 62%, #75553C 81%, #2F4C56 91%, #648B90);
+}
+
+.barracks-frame {
+    height: 90vh;
+    overflow-y: auto;
+}
+
+.heading {
+    background-color: red;
+}
+
+nav {
+    ul {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        label {
+            display: block;
+            background-color: #ccc;
+            padding: 8px 1rem;
+            cursor: pointer;
+
+            &[for="search"] {
+                border-top-left-radius: 10px;
+            }
+
+            &[for="inheritables"] {
+                border-top-right-radius: 10px;
+            }
+        }
+
+        input {
+            display: none;
+
+            &:checked + label {
+                color: var(--feh-gold);
+                background: linear-gradient(to top, var(--navy-blue) 3%, transparent);
+            }
+
+            &:not(:checked) + label {
+                background: linear-gradient(to top, rgba(0,0,0,0.4) 3%, transparent);
+            }
+        }
+    }
 }
 
 .content {
@@ -28,19 +83,21 @@ html {
 }
 
 body {
-    display: grid;
-    grid-template-columns: 1fr 6fr 1fr;
-    height: 100%;
-    width: 100%;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+header {
+    text-align: center;
+    font-size: 4rem;
+    color: var(--feh-gold);
 }
 
 main {
-    grid-area: 1 / 2 / 1 / 2;
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 3fr;
-    row-gap: 1vh;
-    overflow: auto;
+    grid-template-columns: 1fr 3fr;
+    column-gap: clamp(1rem, 10vw, 3rem);
+    height: 90vh;
 }
 
 .searchbox {
@@ -69,7 +126,6 @@ main {
     height: 34px;
     display: flex;
     align-items: center;
-    /* background-color: red; */
     border-radius: 34px;
     padding-left: 4px;
     padding-right: 4px;
@@ -128,8 +184,7 @@ main {
     grid-template-columns: repeat(auto-fill, 160px);
     grid-auto-rows: 160px;
     column-gap: 2vw;
-    row-gap: 2vh;
-    overflow-y: scroll;
+    row-gap: clamp(1rem, 3vw, 2.5rem);
 }
 
 #search-results:not(.hide) {
@@ -210,3 +265,8 @@ main {
         color: red;
     }
 }
+
+.collection {
+    grid-area: 1 / 1 / 2 / 1;
+}
+

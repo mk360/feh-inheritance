@@ -4,25 +4,38 @@
         <link rel="stylesheet" href="./static/index.css" />
     </head>
     <body>
+        <header>
+            Better FEH Inheritance
+        </header>
         <main>
-            <section class="frame">
-                <div class="searchbox content">
-                    <input list="search-results" id="hero-search" class="search-field" />
-                    <datalist class="hide" id="search-results"></datalist>
-                    <div class="mode-container">
-                        <input type="radio" name="app-mode" checked value="search" class="mode-switch" id="search-mode" />
-                        <label class="mode-label" for="search-mode">Search Mode</label>
-                        <div class="switch-bg">
-                            <div class="switch-circle"></div>
-                        </div>
-                        <input type="radio" name="app-mode" value="delete" class="mode-switch" id="delete-mode" />
-                        <label class="mode-label" for="delete-mode">Delete Mode</label>
+            <section class="frame barracks-frame">
+                <section class="content">
+                    <div class="heading">
+                        My roster
                     </div>
-                </div>
+                    <div id="barracks"></div>
+                </section>
             </section>
             <section class="frame">
-                <div id="barracks" class="content">
-                    
+                <div class="content">
+                    <nav>
+                        <ul>
+                            <li>
+                                <input type="radio" id="search" name="tab" />
+                                <label for="search">Search a Character</label>
+                            </li>
+                            <li>
+                                <input type="radio" id="inheritables" name="tab" />
+                                <label for="inheritables">Check Inheritable Skills</label>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="tab-content" id="search-content">
+                        Test
+                    </div>
+                    <div class="tab-content hide" id="inheritables-content">
+                        bonjour
+                    </div>
                 </div>
             </section>
         </main>
