@@ -45,6 +45,27 @@ type SingleUnitWikiResponse struct {
 	} `json:"cargoquery"`
 }
 
+type SkillSearchWikiResponse struct {
+	CargoQuery []struct {
+		Title struct {
+			Name     string `json:"Name"`
+			Unit     string `json:"Unit"`
+			IntID    string `json:"IntID"`
+			Required string `json:"Required"`
+		} `json:"title"`
+	} `json:"cargoquery"`
+}
+
+type UnitWithId struct {
+	Units  []string `json:"units"`
+	IntIDs []int    `json:"ids"`
+}
+
+type Thing struct {
+	Skills map[string][]int `json:"skills"`
+	Units  map[int]string
+}
+
 func convertSlotName(slot string) string {
 	switch slot {
 	case "A":
@@ -56,6 +77,19 @@ func convertSlotName(slot string) string {
 	default:
 		return slot
 	}
+}
+
+func equalArrays(array1 []int, array2 []int) bool {
+	if len(array1) != len(array2) {
+		return false
+	}
+	for i, el := range array1 {
+		if array2[i] != el {
+			return false
+		}
+	}
+
+	return true
 }
 
 func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string) []byte {
@@ -81,7 +115,7 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 	var moveType = singleUnitData.CargoQuery[0].Title.MoveType
 	var weaponType = singleUnitData.CargoQuery[0].Title.WeaponType
 
-	var conditions []string = []string{"Next is null", "Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\""}
+	var conditions []string = []string{"Next is null", "Units.Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Units.Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\""}
 
 	var withoutSelf = filterOut(intIDs, searchedIntID)
 	conditions = append(conditions, "IntID in ("+strings.Join(withoutSelf, ",")+")")
@@ -90,7 +124,7 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 
 	} else {
 		query.Set("tables", "Units, UnitSkills, Skills")
-		query.Set("fields", "Skills.Name, Units._pageName=Unit, IntID")
+		query.Set("fields", "Skills.Name, Units.WikiName=Unit, IntID, Required")
 		query.Set("join_on", "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName")
 		query.Set("order_by", "Skills.Name ASC, Unit ASC")
 		query.Set("limit", "500")
@@ -106,7 +140,41 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 
 		data, _ := io.ReadAll(resp.Body)
 
-		return data
+		var skillResponse SkillSearchWikiResponse = SkillSearchWikiResponse{}
+		json.Unmarshal(data, &skillResponse)
+		var parsedResponse Thing = Thing{
+			Skills: map[string][]int{},
+			Units:  map[int]string{},
+		}
+
+		for _, responseTitle := range skillResponse.CargoQuery {
+			_, ok := parsedResponse.Skills[responseTitle.Title.Name]
+			if !ok {
+				parsedResponse.Skills[responseTitle.Title.Name] = []int{}
+			}
+
+			conv, _ := strconv.Atoi(responseTitle.Title.IntID)
+
+			unitWithId := parsedResponse.Skills[responseTitle.Title.Name]
+			unitWithId = append(unitWithId, conv)
+			parsedResponse.Skills[responseTitle.Title.Name] = unitWithId
+
+			_, requiredSkillExists := parsedResponse.Skills[responseTitle.Title.Required]
+
+			if requiredSkillExists && equalArrays(parsedResponse.Skills[responseTitle.Title.Required], parsedResponse.Skills[responseTitle.Title.Name]) {
+				delete(parsedResponse.Skills, responseTitle.Title.Required)
+			}
+
+			_, unitOk := parsedResponse.Units[conv]
+
+			if !unitOk {
+				parsedResponse.Units[conv] = responseTitle.Title.Unit
+			}
+		}
+
+		stringified, _ := json.Marshal(parsedResponse)
+
+		return stringified
 	}
 
 	return []byte("")
