@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -17,6 +18,8 @@ var WEAPON_TYPES map[string]int = map[string]int{}
 var COLORS [4]string = [4]string{"Red", "Blue", "Green", "Colorless"}
 
 var VARIED_COLORS_WEAPONS [5]string = [5]string{"Bow", "Tome", "Breath", "Beast", "Dagger"}
+
+var wikiNameReplacementRegex, _ = regexp.Compile("(?P<stat1>.*(Atk|Spd|Def|Res))(?P<stat2>(Atk|Spd|Def|Res).*)")
 
 type SearchUnitsWikiResponse struct {
 	CargoQuery []struct {
@@ -159,10 +162,23 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 			unitWithId = append(unitWithId, conv)
 			parsedResponse.Skills[responseTitle.Title.Name] = unitWithId
 
-			_, requiredSkillExists := parsedResponse.Skills[responseTitle.Title.Required]
+			matches := wikiNameReplacementRegex.FindStringSubmatch(responseTitle.Title.Required)
+			// cases like "Fort. Def/Res 2" need special treatment because the "Required" field actually uses the WikiName, not the real name
+			// so we split the string where the stats need a slash
+			// and then manually add the slash
 
-			if requiredSkillExists && equalArrays(parsedResponse.Skills[responseTitle.Title.Required], parsedResponse.Skills[responseTitle.Title.Name]) {
-				delete(parsedResponse.Skills, responseTitle.Title.Required)
+			var patchedName = responseTitle.Title.Required
+
+			if len(matches) > 0 {
+				var firstStringHalf = matches[wikiNameReplacementRegex.SubexpIndex("stat1")]
+				var secondStringHalf = matches[wikiNameReplacementRegex.SubexpIndex("stat2")]
+				patchedName = firstStringHalf + "/" + secondStringHalf
+			}
+
+			currentLearners, requiredSkillExists := parsedResponse.Skills[patchedName]
+
+			if requiredSkillExists && equalArrays(currentLearners, parsedResponse.Skills[responseTitle.Title.Name]) {
+				delete(parsedResponse.Skills, patchedName)
 			}
 
 			_, unitOk := parsedResponse.Units[conv]
