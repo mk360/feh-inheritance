@@ -3,6 +3,7 @@ package main
 // example query : curl "http://localhost:3333/skills?searchedId=112&intIDs=112&intIDs=213&mode=roster&slot=C"
 import (
 	"encoding/json"
+	"fmt"
 	"inheritance/array"
 	"io"
 	"log"
@@ -84,6 +85,7 @@ func convertSlotName(slot string) string {
 }
 
 func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string) []byte {
+	fmt.Println(len(intIDs))
 	var query = url.Values{}
 	query.Set("action", "cargoquery")
 	query.Set("format", "json")
@@ -111,9 +113,7 @@ func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string
 	var withoutSelf = array.FilterOut(intIDs, searchedIntID)
 	conditions = append(conditions, "IntID in ("+strings.Join(withoutSelf, ",")+")")
 
-	if len(singleUnitData.CargoQuery) == 0 {
-
-	} else {
+	if len(singleUnitData.CargoQuery) > 0 {
 		query.Set("tables", "Units, UnitSkills, Skills")
 		query.Set("fields", "Skills.Name, Units._pageName=Unit, IntID, Required")
 		query.Set("join_on", "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName")
