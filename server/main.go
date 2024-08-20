@@ -26,10 +26,8 @@ var wikiNameReplacementRegex, _ = regexp.Compile("(?P<stat1>.*(Atk|Spd|Def|Res))
 type SearchUnitsWikiResponse struct {
 	CargoQuery []struct {
 		Title struct {
-			MoveType   string `json:"MoveType"`
-			WeaponType string `json:"WeaponType"`
-			IntID      string `json:"IntID"`
-			Page       string `json:"Page"`
+			IntID string `json:"IntID"`
+			Page  string `json:"Page"`
 		} `json:"title"`
 	} `json:"cargoquery"`
 }
@@ -231,52 +229,62 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 func searchHeroes(response http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	var searchQuery = strings.ToLower(request.Form.Get("query"))
+	const PAGE_SIZE int = 100
 
-	if len(searchQuery) > 2 {
-		var query = url.Values{}
-		query.Add("action", "cargoquery")
-		query.Add("format", "json")
-		query.Add("tables", "Units")
-		query.Add("fields", "MoveType, WeaponType, IntID, Units._pageName=Page")
+	var query = url.Values{}
+	query.Add("action", "cargoquery")
+	query.Add("format", "json")
+	query.Add("tables", "Units")
+	query.Add("limit", strconv.Itoa(PAGE_SIZE))
+	query.Add("fields", "IntID")
+	query.Add("order_by", "ReleaseDate DESC")
 
-		var where []string = []string{"(lower(Units._pageName) like \"" + searchQuery + "%\" or lower(WikiName) like \"" + searchQuery + "%\")"}
-		if len(request.Form["ids"]) > 0 {
-			where = append(where, "Properties holds not \"enemy\" and IntID not in ("+strings.Join(request.Form["ids"], ",")+")")
-		}
-
-		query.Add("where", strings.Join(where, " and "))
-
-		resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
-
+	if len(request.Form["page"]) > 0 {
+		convertedPage, e := strconv.Atoi(request.Form["page"][0])
 		if e != nil {
-			response.Write([]byte(""))
+			response.WriteHeader(400)
+			response.Write([]byte("Bad page format"))
 			return
+		} else {
+			query.Add("offset", strconv.Itoa(convertedPage*PAGE_SIZE))
 		}
-
-		defer resp.Body.Close()
-
-		data, _ := io.ReadAll(resp.Body)
-		var unmarshaled SearchUnitsWikiResponse = SearchUnitsWikiResponse{}
-		json.Unmarshal(data, &unmarshaled)
-
-		searchResponse := make([]SearchUnitsResponse, len(unmarshaled.CargoQuery))
-
-		for i, entry := range unmarshaled.CargoQuery {
-			integerId, _ := strconv.Atoi(entry.Title.IntID)
-			searchResponse[i] = SearchUnitsResponse{
-				ID:           integerId,
-				Name:         entry.Title.Page,
-				WeaponType:   WEAPON_TYPES[entry.Title.WeaponType],
-				MovementType: MOVEMENT_TYPES[entry.Title.MoveType],
-			}
-		}
-
-		byteResponse, _ := json.Marshal(searchResponse)
-
-		response.Write(byteResponse)
-	} else {
-		response.Write([]byte("[]"))
 	}
+
+	var where []string = []string{}
+
+	if len(request.Form["ids"]) > 0 {
+		where = append(where, "Properties holds not \"enemy\" and IntID not in ("+strings.Join(request.Form["ids"], ",")+")")
+	}
+
+	if len(request.Form["query"]) > 0 {
+		where = append(where, "(lower(Units._pageName) like \""+searchQuery+"%\" or lower(WikiName) like \""+searchQuery+"%\")")
+	}
+
+	query.Add("where", strings.Join(where, " and "))
+
+	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+
+	if e != nil {
+		response.Write([]byte(""))
+		return
+	}
+
+	defer resp.Body.Close()
+
+	data, _ := io.ReadAll(resp.Body)
+	var unmarshaled SearchUnitsWikiResponse = SearchUnitsWikiResponse{}
+	json.Unmarshal(data, &unmarshaled)
+
+	searchResponse := make([]int, len(unmarshaled.CargoQuery))
+
+	for i, entry := range unmarshaled.CargoQuery {
+		integerId, _ := strconv.Atoi(entry.Title.IntID)
+		searchResponse[i] = integerId
+	}
+
+	byteResponse, _ := json.Marshal(searchResponse)
+
+	response.Write(byteResponse)
 }
 
 func convertImageType(imgType string) string {
