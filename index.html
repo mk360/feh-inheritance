@@ -9,20 +9,21 @@
         </header>
         <main>
             <section class="frame barracks-frame">
-                <section class="content">
-                    <div class="heading">
-                        My roster
+                <div class="content">
+                    <div id="barracks">
+                        <div id="barracks-heading" class="heading">
+                            My roster
+                        </div>
                     </div>
-                    <div id="barracks"></div>
-                </section>
+                </div>
             </section>
-            <section class="frame">
+            <section class="frame search-frame">
                 <div class="content">
                     <nav>
                         <ul>
                             <li>
-                                <input type="radio" id="search" name="tab" />
-                                <label for="search">Search a Character</label>
+                                <input type="radio" checked id="search" name="tab" />
+                                <label for="search">Search for a Character</label>
                             </li>
                             <li>
                                 <input type="radio" id="inheritables" name="tab" />
@@ -31,7 +32,9 @@
                         </ul>
                     </nav>
                     <div class="tab-content" id="search-content">
-                        Test
+                        <div class="input-container">
+                            <input id="search-query" />
+                        </div>
                     </div>
                     <div class="tab-content hide" id="inheritables-content">
                         bonjour

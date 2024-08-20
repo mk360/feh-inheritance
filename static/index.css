@@ -2,7 +2,9 @@
     --navy-blue: #2F4C56;
     --feh-light-blue: #00C3E5;
     --feh-gold: #F1D99F;
-    --delete-red: #721717;
+    --delete-dark-red: #721717;
+    --delete-red: #A02D2D;
+    --cell-size: clamp(120px, 8vh, 200px);
 }
 
 @font-face {
@@ -30,15 +32,12 @@ html {
 }
 
 .barracks-frame {
-    height: 90vh;
+    height: 80vh;
     overflow-y: auto;
 }
 
-.heading {
-    background-color: red;
-}
-
 nav {
+    margin-bottom: 1rem;
     ul {
         display: flex;
         list-style: none;
@@ -50,6 +49,7 @@ nav {
             background-color: #ccc;
             padding: 8px 1rem;
             cursor: pointer;
+            font-weight: 600;
 
             &[for="search"] {
                 border-top-left-radius: 10px;
@@ -95,9 +95,9 @@ header {
 
 main {
     display: grid;
-    grid-template-columns: 1fr 3fr;
+    grid-template-columns: 1fr 2fr;
     column-gap: clamp(1rem, 10vw, 3rem);
-    height: 90vh;
+    height: 80vh;
 }
 
 .searchbox {
@@ -115,48 +115,6 @@ main {
     outline: none;
 }
 
-.mode-switch {
-    display: none;
-}
-
-.switch-bg {
-    transition: 300ms linear;
-    position: relative;
-    width: 60px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    border-radius: 34px;
-    padding-left: 4px;
-    padding-right: 4px;
-}
-
-.switch-circle {
-    background-color: #CCCCCC;
-    height: 26px;
-    border-radius: 50%;
-    width: 26px;
-}
-
-#search-mode:checked ~ .switch-bg {
-    background-color: var(--navy-blue);
-}
-
-.switch-bg:has(~ #delete-mode:checked) {
-    background-color: var(--delete-red);
-    justify-content: flex-end;
-}
-
-.mode-container {
-    display: flex;
-    flex: 1;
-    align-items: center;
-}
-
-.hide {
-    display: none;
-}
-
 .hero-container {
     border: none;
     padding: 4px;
@@ -164,12 +122,13 @@ main {
     border-radius: 10px;
     background-color: transparent;
     cursor: pointer;
-    background-size: 160px 160px;
 
     .hero-frame {
         position: absolute;
         z-index: 1;
         inset: 0;
+        height: calc(var(--cell-size) + 10px);
+        width: calc(var(--cell-size) + 10px);
     }
 
     &:focus, &:hover {
@@ -177,56 +136,87 @@ main {
             filter: brightness(120%);
         }
     }
+
+    .portrait {
+        height: var(--cell-size);
+        width: var(--cell-size);
+    }
 }
 
 #barracks {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 160px);
-    grid-auto-rows: 160px;
     column-gap: 2vw;
     row-gap: clamp(1rem, 3vw, 2.5rem);
+    grid-template-columns: repeat(4, var(--cell-size));
+    grid-template-rows: auto var(--cell-size);
 }
 
-#search-results:not(.hide) {
+#barracks-heading {
+    grid-area: 1 / 1 / 1 / 5;
+}
+
+.search-frame {
+    height: 80vh;
+    overflow-y: auto;
+}
+
+#search-content {
+    display: grid;
+    grid-template-columns: repeat(7, var(--cell-size));
+    grid-template-rows: auto var(--cell-size);
+    row-gap: calc(var(--cell-size) / 5);
+    column-gap: 2vw;
+
+    &.hide {
+        display: none;
+    }
+}
+
+.input-container {
+    grid-area: 1 / 1 / 1 / 8;
+    margin-bottom: 1rem;
+}
+
+@media screen and (min-width: 2000px) {
+    #search-content {
+        grid-template-columns: repeat(8, var(--cell-size));
+    }
+
+    .input-container {
+        grid-area: 1 / 1 / 1 / 9;
+    }
+}
+
+#search-query {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: var(--feh-gold);
+    color: var(--feh-gold);
+    font-size: 2rem;
+    caret-color: var(--feh-gold);
+    border-bottom: 2px solid white;
+
+    &:focus {
+        border-bottom: 2px solid var(--feh-gold);
+    }
+}
+
+.heading {
     display: flex;
-    flex-direction: column;
-    position: absolute;
-    min-height: 100px;
-    max-height: 400px;
-    overflow-y: scroll;
-    width: 600px;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--feh-gold);
     background-color: var(--navy-blue);
     border-radius: 10px;
-    border: 3px solid var(--feh-light-blue);
-    left: 13%;
-    top: 20%;
-    z-index: 2;
 }
 
-.search-entry {
-    background-color: transparent;
-    display: flex;
-    border: none;
-    outline: 1px solid var(--navy-blue);
-    grid-template-columns: 1fr auto;
-    grid-template-rows: 1fr;
-    cursor: pointer;
-    align-items: center;
-
-    img {
-        height: 80px;
-        width: 80px;
-    }
-
-    span {
-        flex: 1;
-        color: white;
-    }
-
-    &:hover, &:focus {
-        outline-color: var(--feh-light-blue);
-        background-color: var(--feh-light-blue);
-    }
+#inheritables-content.hide {
+    display: none;
 }
 
 #inheritable-skills {
@@ -266,7 +256,31 @@ main {
     }
 }
 
-.collection {
-    grid-area: 1 / 1 / 2 / 1;
+.delete-button {
+    padding: 0.5rem;
+    border-radius: 50%;
+    z-index: 1;
+    border: 0;
+    outline: 1px solid transparent;
+    position: absolute;
+    bottom: 0;
+    background: radial-gradient(var(--delete-dark-red) 30%, var(--delete-red));
+    right: 0;
+    height: 1rem;
+
+    &:focus, &:hover {
+        outline: 1px solid var(--delete-red);
+    }
+
+    & img {
+        height: 100%;
+    }
 }
 
+.icons-container {
+    height: calc(var(--cell-size) + 10px);
+    width: calc(var(--cell-size) + 10px);
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+}
