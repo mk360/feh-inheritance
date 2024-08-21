@@ -21,6 +21,11 @@
                     container.classList.add("hide");
                 }
             }
+            if (id === "inheritables") {
+                HERO_SEARCH.parentNode.classList.add("hide");
+            } else {
+                HERO_SEARCH.parentNode.classList.remove("hide");
+            }
         }
     }
     
@@ -144,7 +149,7 @@
             signal: abortController.signal
         }).catch(() => {}).then((response) => response.json()).then((elements) => {
             if (!append) {
-                while (SEARCH_RESULTS.lastChild.nodeName !== "DIV") SEARCH_RESULTS.removeChild(SEARCH_RESULTS.lastChild);
+                while (SEARCH_RESULTS.lastChild && SEARCH_RESULTS.lastChild.nodeName !== "DIV") SEARCH_RESULTS.removeChild(SEARCH_RESULTS.lastChild);
             }
 
             for (let elem of elements) {

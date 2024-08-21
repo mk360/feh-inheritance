@@ -10,10 +10,10 @@
         <main>
             <section class="frame barracks-frame">
                 <div class="content">
+                    <div id="barracks-heading" class="heading">
+                        My roster
+                    </div>
                     <div id="barracks">
-                        <div id="barracks-heading" class="heading">
-                            My roster
-                        </div>
                     </div>
                 </div>
             </section>
@@ -31,10 +31,10 @@
                             </li>
                         </ul>
                     </nav>
+                    <div class="input-container">
+                        <input placeholder="Search for a Hero to add to your roster" id="search-query" />
+                    </div>
                     <div class="tab-content" id="search-content">
-                        <div class="input-container">
-                            <input id="search-query" />
-                        </div>
                     </div>
                     <div class="tab-content hide" id="inheritables-content">
                         <div id="upgrade-heading" class="heading">
@@ -44,22 +44,6 @@
                 </div>
             </section>
         </main>
-        <dialog id="inheritable-skills">
-            <div class="frame">
-                <div class="content skills-modal">
-                    <div class="skill-filters">
-                        <input type="radio" class="skill-filter" id="weapon" name="skill" />
-                        <label for="weapon" class="filter-weapon">Weapon</label>
-                        <input type="radio" class="skill-filter" id="assist" name="skill" />
-                        <label for="assist" class="filter-assist">Weapon</label>
-                        <input type="radio" class="skill-filter" id="special" name="skill" />
-                        <input type="radio" class="skill-filter" id="a" name="skill" />
-                        <input type="radio" class="skill-filter" id="b" name="skill" />
-                        <input type="radio" class="skill-filter" id="c" name="skill" />
-                    </div>
-                </div>
-            </div>
-        </dialog>
         <script src="./script/index.js"></script>
     </body>
 </html>
