@@ -10,9 +10,6 @@
     let searchQuery = "";
     let page = 0;
 
-
-
-
     for (let tab of TABS) {
         tab.onchange = function() {
             const { id } = this;
@@ -25,21 +22,6 @@
                 }
             }
         }
-    }
-
-    function checkInheritableSkills() {
-        const { unitId } = this.dataset;
-        const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
-        const urlSearchParams = new URLSearchParams();
-        for (let { id, favorite } of existingIds) {
-            if (!favorite && id !== unitId) {
-                urlSearchParams.append("intIDs", id);
-            }
-        }
-        document.getElementById("inheritables").click();
-        fetch(`http://localhost:3333/skills?slot=A&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
-            return res.json();
-        }).then(console.log)
     }
     
     HERO_SEARCH.onkeyup = (e) => {
@@ -233,5 +215,20 @@
         img.src = "./static/favorite-off.png";
         img.classList.add("favorite-button");
         return img;
+    }
+
+    function checkInheritableSkills() {
+        const { unitId } = this.dataset;
+        const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
+        const urlSearchParams = new URLSearchParams();
+        for (let { id, favorite } of existingIds) {
+            if (!favorite && id !== unitId) {
+                urlSearchParams.append("intIDs", id);
+            }
+        }
+        document.getElementById("inheritables").click();
+        fetch(`http://localhost:3333/skills?slot=A&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
+            return res.json();
+        }).then(console.log)
     }
 })();
