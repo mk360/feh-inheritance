@@ -3,7 +3,6 @@ package main
 // example query : curl "http://localhost:3333/skills?searchedId=112&intIDs=112&intIDs=213&mode=roster&slot=C"
 import (
 	"encoding/json"
-	"fmt"
 	"inheritance/array"
 	"io"
 	"log"
@@ -83,7 +82,6 @@ func convertSlotName(slot string) string {
 }
 
 func inheritableSkillsRequest(intIDs []string, searchedIntID string, slot string) []byte {
-	fmt.Println(len(intIDs))
 	var query = url.Values{}
 	query.Set("action", "cargoquery")
 	query.Set("format", "json")

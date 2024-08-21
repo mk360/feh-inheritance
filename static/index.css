@@ -177,6 +177,28 @@ main {
     margin-bottom: 1rem;
 }
 
+#load-more {
+    grid-column-start: 1;
+    grid-column-end: 8;
+    outline: 1px solid transparent;
+    border-radius: 10px;
+    border: none;
+
+    &:hover, &:focus {
+        outline: 1px solid var(--navy-blue);
+    }
+}
+
+.cta {
+    background-color: var(--feh-gold);
+    color: var(--navy-blue);
+    padding: 1rem 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px black;
+}
+
 @media screen and (min-width: 2000px) {
     #search-content {
         grid-template-columns: repeat(8, var(--cell-size));
@@ -184,6 +206,11 @@ main {
 
     .input-container {
         grid-area: 1 / 1 / 1 / 9;
+    }
+
+    #load-more {
+        grid-column-start: 1;
+        grid-column-end: 9;
     }
 }
 
@@ -213,6 +240,7 @@ main {
     color: var(--feh-gold);
     background-color: var(--navy-blue);
     border-radius: 10px;
+    box-shadow: 2px 2px 5px black;
 }
 
 #inheritables-content.hide {
@@ -274,6 +302,20 @@ main {
 
     & img {
         height: 100%;
+    }
+}
+
+.favorite-button {
+    z-index: 1;
+    border: 0;
+    outline: 1px solid transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2rem;
+
+    &:hover {
+        filter: brightness(500%);
     }
 }
 
