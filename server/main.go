@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"inheritance/array"
 	"inheritance/queries"
+	"inheritance/structs"
 	"io"
 	"net/http"
 	"net/url"
@@ -14,6 +15,7 @@ import (
 
 var MOVEMENT_TYPES map[string]int = map[string]int{}
 var WEAPON_TYPES map[string]int = map[string]int{}
+var skillsArr = []string{"A", "B", "C", "weapon", "assist", "special"}
 
 var COLORS [4]string = [4]string{"Red", "Blue", "Green", "Colorless"}
 
@@ -22,19 +24,6 @@ var VARIED_COLORS_WEAPONS [5]string = [5]string{"Bow", "Tome", "Breath", "Beast"
 type UnitWithId struct {
 	Units  []string `json:"units"`
 	IntIDs []int    `json:"ids"`
-}
-
-func convertSlotName(slot string) string {
-	switch slot {
-	case "A":
-		return "passivea"
-	case "B":
-		return "passiveb"
-	case "C":
-		return "passivec"
-	default:
-		return slot
-	}
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -69,16 +58,14 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var skillsArr = []string{"A", "B", "C", "weapon", "assist", "special"}
-
 	if len(req.Form["slot"]) == 0 || !array.Includes(skillsArr, req.Form["slot"][0]) {
 		response.WriteHeader(400)
 		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, weapon, assist or special\n"))
 	}
 
-	var x = queries.GetInheritableSkills(req.Form["intIDs"], req.Form["searchedId"][0], req.Form["slot"][0])
+	var skills = queries.GetInheritableSkills(req.Form["intIDs"], req.Form["searchedId"][0], req.Form["slot"][0])
 
-	response.Write(x)
+	response.Write(skills)
 }
 
 func searchHeroes(response http.ResponseWriter, request *http.Request) {
@@ -86,60 +73,20 @@ func searchHeroes(response http.ResponseWriter, request *http.Request) {
 	var searchQuery = strings.ToLower(request.Form.Get("query"))
 	const PAGE_SIZE int = 100
 
-	var query = url.Values{}
-	query.Add("action", "cargoquery")
-	query.Add("format", "json")
-	query.Add("tables", "Units")
-	query.Add("limit", strconv.Itoa(PAGE_SIZE))
-	query.Add("fields", "IntID")
-	query.Add("order_by", "ReleaseDate DESC")
-
 	if len(request.Form["page"]) > 0 {
 		convertedPage, e := strconv.Atoi(request.Form["page"][0])
 		if e != nil {
 			response.WriteHeader(400)
 			response.Write([]byte("Bad page format"))
 			return
-		} else {
-			query.Add("offset", strconv.Itoa(convertedPage*PAGE_SIZE))
 		}
+
+		var responseIds = queries.GetHeroes(searchQuery, request.Form["ids"], convertedPage, PAGE_SIZE)
+
+		byteResponse, _ := json.Marshal(responseIds)
+
+		response.Write(byteResponse)
 	}
-
-	var where []string = []string{}
-
-	if len(request.Form["ids"]) > 0 {
-		where = append(where, "Properties holds not \"enemy\" and IntID not in ("+strings.Join(request.Form["ids"], ",")+")")
-	}
-
-	if len(request.Form["query"]) > 0 {
-		where = append(where, "(lower(Units._pageName) like \""+searchQuery+"%\" or lower(WikiName) like \""+searchQuery+"%\")")
-	}
-
-	query.Add("where", strings.Join(where, " and "))
-
-	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
-
-	if e != nil {
-		response.Write([]byte(""))
-		return
-	}
-
-	defer resp.Body.Close()
-
-	data, _ := io.ReadAll(resp.Body)
-	var unmarshaled SearchUnitsWikiResponse = SearchUnitsWikiResponse{}
-	json.Unmarshal(data, &unmarshaled)
-
-	searchResponse := make([]int, len(unmarshaled.CargoQuery))
-
-	for i, entry := range unmarshaled.CargoQuery {
-		integerId, _ := strconv.Atoi(entry.Title.IntID)
-		searchResponse[i] = integerId
-	}
-
-	byteResponse, _ := json.Marshal(searchResponse)
-
-	response.Write(byteResponse)
 }
 
 func convertImageType(imgType string) string {
@@ -179,7 +126,7 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	defer resp.Body.Close()
 
 	data, _ := io.ReadAll(resp.Body)
-	var unmarshaled SearchUnitsWikiResponse = SearchUnitsWikiResponse{}
+	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
 	json.Unmarshal(data, &unmarshaled)
 	var url = "https://feheroes.fandom.com/wiki/Special:Filepath/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
 	response.Header().Set("Location", url)

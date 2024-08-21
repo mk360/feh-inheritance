@@ -2,6 +2,7 @@ package queries
 
 import (
 	"encoding/json"
+	"fmt"
 	"inheritance/array"
 	"inheritance/structs"
 	"io"
@@ -14,6 +15,19 @@ import (
 )
 
 var wikiNameReplacementRegex, _ = regexp.Compile("(?P<stat1>.*(Atk|Spd|Def|Res))(?P<stat2>(Atk|Spd|Def|Res).*)")
+
+func convertSlotName(slot string) string {
+	switch slot {
+	case "A":
+		return "passivea"
+	case "B":
+		return "passiveb"
+	case "C":
+		return "passivec"
+	default:
+		return slot
+	}
+}
 
 func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []byte {
 	var query = url.Values{}
@@ -112,4 +126,52 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 	}
 
 	return []byte("")
+}
+
+func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) []int {
+	var query = url.Values{}
+	query.Add("action", "cargoquery")
+	query.Add("format", "json")
+	query.Add("tables", "Units")
+	query.Add("limit", strconv.Itoa(pageSize))
+	query.Add("fields", "IntID")
+	query.Add("order_by", "ReleaseDate DESC")
+	query.Add("offset", strconv.Itoa(page*pageSize))
+
+	var where []string = []string{}
+
+	if len(idsToOmit) > 0 {
+		where = append(where, "Properties holds not \"enemy\" and IntID not in ("+strings.Join(idsToOmit, ",")+")")
+	}
+
+	if searchQuery != "" {
+		where = append(where, "(lower(Units._pageName) like \""+searchQuery+"%\" or lower(WikiName) like \""+searchQuery+"%\")")
+	}
+
+	query.Add("where", strings.Join(where, " and "))
+
+	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+
+	if e != nil {
+		fmt.Println("error with query")
+		fmt.Println(query)
+		var empty []int = []int{}
+
+		return empty
+	}
+
+	defer resp.Body.Close()
+
+	data, _ := io.ReadAll(resp.Body)
+	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
+	json.Unmarshal(data, &unmarshaled)
+
+	searchResponse := make([]int, len(unmarshaled.CargoQuery))
+
+	for i, entry := range unmarshaled.CargoQuery {
+		integerId, _ := strconv.Atoi(entry.Title.IntID)
+		searchResponse[i] = integerId
+	}
+
+	return searchResponse
 }
