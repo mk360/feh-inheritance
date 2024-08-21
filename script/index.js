@@ -108,7 +108,6 @@
             if (newState) {
                 const currentBarracks = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
                 const firstUnfavorite = currentBarracks.find((hero) => !hero.favorite);
-                console.log(firstUnfavorite);
                 if (firstUnfavorite) {
                     const { id } = firstUnfavorite;
                     console.log(boundItem.parentNode);
