@@ -59,7 +59,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 
 	if len(singleUnitData.CargoQuery) > 0 {
 		query.Set("tables", "Units, UnitSkills, Skills")
-		query.Set("fields", "Skills.Name, Units._pageName=Unit, IntID, Required")
+		query.Set("fields", "Skills.Name, Skills.Icon, Units._pageName=Unit, IntID, Required")
 		query.Set("join_on", "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName")
 		query.Set("order_by", "Skills.Name ASC, Unit ASC")
 		query.Set("limit", "500")
@@ -78,21 +78,25 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 		var skillResponse structs.SearchSkillsWikiResponse = structs.SearchSkillsWikiResponse{}
 		json.Unmarshal(data, &skillResponse)
 		var parsedResponse structs.SearchSkillsResponse = structs.SearchSkillsResponse{
-			Skills: map[string][]int{},
+			Skills: map[string]structs.SkillInfos{},
 			Units:  map[int]string{},
 		}
 
 		for _, responseTitle := range skillResponse.CargoQuery {
 			_, ok := parsedResponse.Skills[responseTitle.Title.Name]
 			if !ok {
-				parsedResponse.Skills[responseTitle.Title.Name] = []int{}
+				parsedResponse.Skills[responseTitle.Title.Name] = structs.SkillInfos{
+					Ids:  []int{},
+					Icon: responseTitle.Title.Icon,
+				}
 			}
 
 			conv, _ := strconv.Atoi(responseTitle.Title.IntID)
 
-			unitWithId := parsedResponse.Skills[responseTitle.Title.Name]
-			unitWithId = append(unitWithId, conv)
-			parsedResponse.Skills[responseTitle.Title.Name] = unitWithId
+			skillDictIds := parsedResponse.Skills[responseTitle.Title.Name]
+			skillDictIds.Ids = append(skillDictIds.Ids, conv)
+
+			parsedResponse.Skills[responseTitle.Title.Name] = skillDictIds
 
 			matches := wikiNameReplacementRegex.FindStringSubmatch(responseTitle.Title.Required)
 			// cases like "Fort. Def/Res 2" need special treatment because the "Required" field actually uses the WikiName, not the real name
@@ -109,7 +113,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 
 			currentLearners, requiredSkillExists := parsedResponse.Skills[patchedName]
 
-			if requiredSkillExists && array.Equals(currentLearners, parsedResponse.Skills[responseTitle.Title.Name]) {
+			if requiredSkillExists && array.Equals(currentLearners.Ids, parsedResponse.Skills[responseTitle.Title.Name].Ids) {
 				delete(parsedResponse.Skills, patchedName)
 			}
 

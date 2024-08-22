@@ -7,6 +7,8 @@
     const TABS = document.querySelectorAll('input[name="tab"]');
     const SEARCH_RESULTS = document.getElementById("search-content");
     const HERO_SEARCH = document.getElementById("search-query");
+    const SKILL_DONORS_LIST = document.getElementById("skill-donors");
+
     let searchQuery = "";
     let page = 0;
 
@@ -234,6 +236,39 @@
         document.getElementById("inheritables").click();
         fetch(`http://localhost:3333/skills?slot=A&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
             return res.json();
-        }).then(console.log)
+        }).then((skillList) => {
+            while (SKILL_DONORS_LIST.firstChild) SKILL_DONORS_LIST.removeChild(SKILL_DONORS_LIST.firstChild);
+            for (let skill in skillList.Skills) {
+                const skillData = skillList.Skills[skill];
+                const skillSubtitle = document.createElement("h3");
+                skillSubtitle.innerHTML = skill;
+                const skillIcon = document.createElement("img");
+                skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}`;
+                SKILL_DONORS_LIST.appendChild(skillIcon);
+                SKILL_DONORS_LIST.appendChild(skillSubtitle);
+
+                const skillTitleContainer = document.createElement("div");
+                skillTitleContainer.classList.add("skill-title");
+                skillTitleContainer.appendChild(skillIcon);
+                skillTitleContainer.appendChild(skillSubtitle);
+
+                SKILL_DONORS_LIST.appendChild(skillTitleContainer);
+
+                for (let unitId of skillData.ids) {
+                    const characterName = skillList.units[unitId];
+
+
+                    const donorBanner = document.createElement("div");
+                    donorBanner.classList.add("donor-banner");
+                    donorBanner.innerText = characterName;
+                    const donorImage = document.createElement("img");
+                    donorImage.src = `http://localhost:3333/img?id=${unitId}&imgType=battle`;
+                    donorImage.classList.add("skill-donor");
+                    donorBanner.appendChild(donorImage);
+
+                    SKILL_DONORS_LIST.appendChild(donorBanner);
+                }
+            }
+        });
     }
 })();

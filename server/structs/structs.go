@@ -7,13 +7,19 @@ type SearchSkillsWikiResponse struct {
 			Unit     string `json:"Unit"`
 			IntID    string `json:"IntID"`
 			Required string `json:"Required"`
+			Icon     string `json:"icon"`
 		} `json:"title"`
 	} `json:"cargoquery"`
 }
 
+type SkillInfos struct {
+	Ids  []int  `json:"ids"`
+	Icon string `json:"icon"`
+}
+
 type SearchSkillsResponse struct {
-	Skills map[string][]int `json:"skills"`
-	Units  map[int]string
+	Skills map[string]SkillInfos
+	Units  map[int]string `json:"units"`
 }
 
 type SingleUnitWikiResponse struct {
