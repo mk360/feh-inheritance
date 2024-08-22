@@ -1,14 +1,16 @@
 package structs
 
+type SkillResponseTitle struct {
+	Name     string `json:"Name"`
+	Unit     string `json:"Unit"`
+	IntID    string `json:"IntID"`
+	Required string `json:"Required"`
+	Icon     string `json:"icon"`
+}
+
 type SearchSkillsWikiResponse struct {
 	CargoQuery []struct {
-		Title struct {
-			Name     string `json:"Name"`
-			Unit     string `json:"Unit"`
-			IntID    string `json:"IntID"`
-			Required string `json:"Required"`
-			Icon     string `json:"icon"`
-		} `json:"title"`
+		Title SkillResponseTitle `json:"title"`
 	} `json:"cargoquery"`
 }
 

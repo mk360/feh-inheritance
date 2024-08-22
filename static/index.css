@@ -96,6 +96,7 @@ body {
 header {
     text-align: center;
     font-size: 4rem;
+    margin-bottom: 1rem;
     color: var(--feh-gold);
 }
 
@@ -254,13 +255,17 @@ main {
     justify-content: center;
     align-items: center;
     padding: 2rem 1rem;
-    font-size: 2rem;
+    font-size: clamp(1rem, 3vw, 2rem);
     font-weight: 600;
     margin-bottom: 1rem;
     color: var(--feh-gold);
     background-color: var(--navy-blue);
     border-radius: 10px;
     box-shadow: 2px 2px 5px black;
+
+    .character-selected {
+        flex-direction: column;
+    }
 }
 
 #inheritables-content.hide {
@@ -279,10 +284,16 @@ main {
     }
 }
 
-.skill-filters {
+#skill-filters {
     display: flex;
     justify-content: space-evenly;
+    align-items: center;
     gap: 1vw;
+    padding: 1rem;
+
+    &.hide {
+        display: none;
+    }
 }
 
 .filter-input {
@@ -332,6 +343,23 @@ main {
     inset: 0;
 }
 
+.skill-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.skill-subtitle {
+    background: var(--feh-gold);
+    color: transparent;
+    background-clip: text;
+}
+
+.skill-icon {
+    height: calc(var(--cell-size) / 3);
+    width: calc(var(--cell-size) / 3);
+}
+
 .donor-banner {
     background: linear-gradient(to left, var(--feh-light-blue), var(--navy-blue) 20%);
     height: var(--cell-size);
@@ -349,5 +377,38 @@ main {
     transform: rotateY(180deg);
     height: 100%;
     position: absolute;
+    mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), black);
     right: 0;
+}
+
+footer {
+    background-color: var(--navy-blue);
+    color: var(--feh-gold);
+    font-size: 1.2rem;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px black;
+}
+
+a:not(:visited) {
+    color: var(--feh-light-blue);
+}
+
+a:visited {
+    color: var(--feh-gold);
+}
+
+.skill-filter-label {
+    display: block;
+    cursor: pointer;
+    transform: scale(1);
+
+    &:active {
+        transform: scale(0.85);
+    }
+
+    img {
+        height: 2vw;
+        object-fit: contain;
+    }
 }

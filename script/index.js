@@ -8,9 +8,19 @@
     const SEARCH_RESULTS = document.getElementById("search-content");
     const HERO_SEARCH = document.getElementById("search-query");
     const SKILL_DONORS_LIST = document.getElementById("skill-donors");
+    const SKILL_FILTERS = document.getElementById("skill-filters");
+    let lastCheckedHero;
 
     let searchQuery = "";
     let page = 0;
+
+    document.getElementById("search").click();
+
+    Array.from(document.getElementsByClassName("filter-input")).forEach((input) => {
+        input.onclick = function() {
+            checkInheritableSkills(this.id, lastCheckedHero);
+        }
+    });
 
     for (let tab of TABS) {
         tab.onchange = function() {
@@ -69,7 +79,10 @@
                     }
                     iconsContainer.appendChild(deleteButton);
                     iconsContainer.appendChild(favoriteIcon);
-                    heroButton.onclick = checkInheritableSkills;
+                    heroButton.onclick = function(){
+                        lastCheckedHero = this;
+                        checkInheritableSkills("weapon", this);
+                    };
                     BARRACKS.appendChild(heroButton);
                 }
             }
@@ -129,7 +142,10 @@
         newButtons.iconsContainer.appendChild(favoriteIcon);
         BARRACKS.appendChild(newButtons.heroButton);
         newButtons.heroButton.dataset.favorite = false;
-        newButtons.heroButton.onclick = checkInheritableSkills;
+        newButtons.heroButton.onclick = function() {
+            lastCheckedHero = this;
+            checkInheritableSkills("weapon", this);
+        };
         saveBarracks();
         SEARCH_RESULTS.removeChild(this);
     }
@@ -224,8 +240,8 @@
         return img;
     }
 
-    function checkInheritableSkills() {
-        const { unitId } = this.dataset;
+    function checkInheritableSkills(slot, hero) {
+        const { unitId } = hero.dataset;
         const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
         const urlSearchParams = new URLSearchParams();
         for (let { id, favorite } of existingIds) {
@@ -234,22 +250,33 @@
             }
         }
         document.getElementById("inheritables").click();
-        fetch(`http://localhost:3333/skills?slot=A&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
+        fetch(`http://localhost:3333/skills?slot=${slot}&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
             return res.json();
         }).then((skillList) => {
-            while (SKILL_DONORS_LIST.firstChild) SKILL_DONORS_LIST.removeChild(SKILL_DONORS_LIST.firstChild);
+            SKILL_DONORS_LIST.innerHTML = "";
+            SKILL_FILTERS.classList.remove("hide");
+            if (!Object.keys(skillList.Skills).length) {
+                const noUnits = document.createElement("p");
+                noUnits.innerHTML = `There are no units that could inherit any ${slot}.`;
+                SKILL_DONORS_LIST.appendChild(noUnits);
+                return;
+            }
             for (let skill in skillList.Skills) {
                 const skillData = skillList.Skills[skill];
                 const skillSubtitle = document.createElement("h3");
+                skillSubtitle.classList.add("skill-subtitle");
                 skillSubtitle.innerHTML = skill;
-                const skillIcon = document.createElement("img");
-                skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}`;
-                SKILL_DONORS_LIST.appendChild(skillIcon);
-                SKILL_DONORS_LIST.appendChild(skillSubtitle);
-
                 const skillTitleContainer = document.createElement("div");
                 skillTitleContainer.classList.add("skill-title");
-                skillTitleContainer.appendChild(skillIcon);
+
+                if (!["weapon", "assist", "special"].includes(slot)) {
+                    const skillIcon = document.createElement("img");
+                    skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}`;
+                    skillIcon.classList.add("skill-icon");
+                    skillTitleContainer.appendChild(skillIcon);
+                }
+                SKILL_DONORS_LIST.appendChild(skillSubtitle);
+
                 skillTitleContainer.appendChild(skillSubtitle);
 
                 SKILL_DONORS_LIST.appendChild(skillTitleContainer);
