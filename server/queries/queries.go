@@ -35,7 +35,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 	query.Set("format", "json")
 	query.Set("tables", "Units")
 	query.Set("where", "IntID = "+searchedIntID)
-	query.Set("fields", "MoveType, WeaponType")
+	query.Set("fields", "MoveType, WeaponType, Units._pageName=Unit")
 
 	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
 
@@ -78,8 +78,9 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 		var skillResponse structs.SearchSkillsWikiResponse = structs.SearchSkillsWikiResponse{}
 		json.Unmarshal(data, &skillResponse)
 		var parsedResponse structs.SearchSkillsResponse = structs.SearchSkillsResponse{
-			Skills: map[string]structs.SkillInfos{},
-			Units:  map[int]string{},
+			Skills:   map[string]structs.SkillInfos{},
+			Units:    map[int]string{},
+			Searched: singleUnitData.CargoQuery[0].Title.Unit,
 		}
 
 		for _, responseTitle := range skillResponse.CargoQuery {

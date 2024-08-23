@@ -20,8 +20,9 @@ type SkillInfos struct {
 }
 
 type SearchSkillsResponse struct {
-	Skills map[string]SkillInfos
-	Units  map[int]string `json:"units"`
+	Skills   map[string]SkillInfos
+	Units    map[int]string `json:"units"`
+	Searched string         `json:"searched"`
 }
 
 type SingleUnitWikiResponse struct {
@@ -29,6 +30,7 @@ type SingleUnitWikiResponse struct {
 		Title struct {
 			MoveType   string `json:"MoveType"`
 			WeaponType string `json:"WeaponType"`
+			Unit       string `json:"Unit"`
 		} `json:"title"`
 	} `json:"cargoquery"`
 }
