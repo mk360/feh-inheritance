@@ -13,12 +13,14 @@
 
     let searchQuery = "";
     let page = 0;
+    let currentFilter = "";
 
     document.getElementById("search").click();
 
     Array.from(document.getElementsByClassName("filter-input")).forEach((input) => {
         input.onclick = function() {
-            checkInheritableSkills(this.id, lastCheckedHero);
+            currentFilter = this.id;
+            checkInheritableSkills(currentFilter, lastCheckedHero);
         }
     });
 
@@ -81,7 +83,8 @@
                     iconsContainer.appendChild(favoriteIcon);
                     heroButton.onclick = function(){
                         lastCheckedHero = this;
-                        checkInheritableSkills("weapon", this);
+                        if (!currentFilter) currentFilter = "weapon";
+                        checkInheritableSkills(currentFilter, this);
                     };
                     BARRACKS.appendChild(heroButton);
                 }
@@ -144,7 +147,8 @@
         newButtons.heroButton.dataset.favorite = false;
         newButtons.heroButton.onclick = function() {
             lastCheckedHero = this;
-            checkInheritableSkills("weapon", this);
+            if (!currentFilter) currentFilter = "weapon";
+            checkInheritableSkills(currentFilter, this);
         };
         saveBarracks();
         SEARCH_RESULTS.removeChild(this);
@@ -184,7 +188,6 @@
                 newLoadMore.id = "load-more";
 
                 newLoadMore.onclick = function() {
-                    this.disabled = true;
                     page++;
                     loadSearchSuggestions(page, true);
                 };
@@ -255,9 +258,11 @@
         }).then((skillList) => {
             SKILL_DONORS_LIST.innerHTML = "";
             SKILL_FILTERS.classList.remove("hide");
+            document.getElementById("upgrade-heading").innerHTML = `Skills that ${skillList.searched} can inherit`
             if (!Object.keys(skillList.Skills).length) {
-                const noUnits = document.createElement("p");
-                noUnits.innerHTML = `There are no units that could inherit any ${slot}.`;
+                const noUnits = document.createElement("div");
+                noUnits.classList.add("donor-banner");
+                noUnits.innerHTML = `There are no units that could give any ${slot} with the current roster.`;
                 SKILL_DONORS_LIST.appendChild(noUnits);
                 return;
             }
@@ -283,8 +288,6 @@
 
                 for (let unitId of skillData.ids) {
                     const characterName = skillList.units[unitId];
-
-
                     const donorBanner = document.createElement("div");
                     donorBanner.classList.add("donor-banner");
                     donorBanner.innerText = characterName;
