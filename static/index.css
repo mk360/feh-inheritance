@@ -19,7 +19,6 @@
 
 html {
     background-image: url("./bg.webp");
-    height: 100%;
     width: 100vw;
     background-repeat: no-repeat;
     background-size: cover;
@@ -281,9 +280,9 @@ main {
     }
 
     nav {
-        font-size: 2rem;
-
+        
         li {
+            font-size: 4vw;
             flex: 1;
             text-align: center;
         }
@@ -304,7 +303,7 @@ main {
     }
 
     #search-query {
-        font-size: 3rem;
+        font-size: 5vw;
     }
 
     .delete-button {
@@ -322,7 +321,7 @@ main {
     justify-content: center;
     align-items: center;
     padding: 2rem 1rem;
-    font-size: clamp(1rem, 3vw, 2rem);
+    font-size: clamp(1rem, 3vw, 1.5rem);
     font-weight: 600;
     margin-bottom: 1rem;
     color: var(--feh-gold);
