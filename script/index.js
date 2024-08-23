@@ -83,7 +83,10 @@
                     iconsContainer.appendChild(favoriteIcon);
                     heroButton.onclick = function(){
                         lastCheckedHero = this;
-                        if (!currentFilter) currentFilter = "weapon";
+                        if (!currentFilter) {
+                            currentFilter = "weapon";
+                            document.getElementById(currentFilter).checked = true;
+                        }
                         checkInheritableSkills(currentFilter, this);
                     };
                     BARRACKS.appendChild(heroButton);
@@ -147,7 +150,10 @@
         newButtons.heroButton.dataset.favorite = false;
         newButtons.heroButton.onclick = function() {
             lastCheckedHero = this;
-            if (!currentFilter) currentFilter = "weapon";
+            if (!currentFilter) {
+                currentFilter = "weapon";
+                document.getElementById(currentFilter).checked = true;
+            }
             checkInheritableSkills(currentFilter, this);
         };
         saveBarracks();
