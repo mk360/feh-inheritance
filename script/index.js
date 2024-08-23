@@ -9,6 +9,7 @@
     const HERO_SEARCH = document.getElementById("search-query");
     const SKILL_DONORS_LIST = document.getElementById("skill-donors");
     const SKILL_FILTERS = document.getElementById("skill-filters");
+    const API_URL = "https://api.feh-inheritance.tonion-the-onion.com";
     let lastCheckedHero;
 
     let searchQuery = "";
@@ -173,7 +174,7 @@
 
         const abortController = new AbortController();
 
-        return fetch(`http://localhost:3333/heroes?${params.toString()}`, {
+        return fetch(`${API_URL}/heroes?${params.toString()}`, {
             signal: abortController.signal
         }).catch(() => {}).then((response) => response.json()).then((elements) => {
             if (!append) {
@@ -213,7 +214,7 @@
         frame.classList.add("hero-frame");
 
         const img = document.createElement("img");
-        img.src = `http://localhost:3333/img?id=${heroId}&imgType=portrait`;
+        img.src = `${API_URL}/img?id=${heroId}&imgType=portrait`;
         img.loading = "lazy";
         img.classList.add("portrait");
         heroButton.appendChild(img);
@@ -259,7 +260,7 @@
             }
         }
         document.getElementById("inheritables").click();
-        fetch(`http://localhost:3333/skills?slot=${slot}&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
+        fetch(`${API_URL}/skills?slot=${slot}&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
             return res.json();
         }).then((skillList) => {
             SKILL_DONORS_LIST.innerHTML = "";
@@ -298,7 +299,7 @@
                     donorBanner.classList.add("donor-banner");
                     donorBanner.innerText = characterName;
                     const donorImage = document.createElement("img");
-                    donorImage.src = `http://localhost:3333/img?id=${unitId}&imgType=battle`;
+                    donorImage.src = `${API_URL}/img?id=${unitId}&imgType=battle`;
                     donorImage.classList.add("skill-donor");
                     donorBanner.appendChild(donorImage);
 
