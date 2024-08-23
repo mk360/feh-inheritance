@@ -34,7 +34,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 	query.Set("action", "cargoquery")
 	query.Set("format", "json")
 	query.Set("tables", "Units")
-	query.Set("where", "IntID = "+searchedIntID)
+	query.Set("where", "Properties holds not \"enemy\" and IntID = "+searchedIntID)
 	query.Set("fields", "MoveType, WeaponType, Units._pageName=Unit")
 
 	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
