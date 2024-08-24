@@ -119,12 +119,13 @@
                 const firstUnfavorite = currentBarracks.find((hero) => !hero.favorite);
                 if (firstUnfavorite) {
                     const { id } = firstUnfavorite;
-                    console.log(boundItem.parentNode);
                     boundItem.parentNode.insertBefore(boundItem, boundItem.parentNode.querySelector(`[data-unit-id="${id}"]`));
                 }
             }
             saveBarracks();
             state = newState;
+            lastCheckedHero = boundItem;
+            document.getElementById("weapon").click();
         }
     }
 
@@ -269,7 +270,7 @@
             if (!Object.keys(skillList.Skills).length) {
                 const noUnits = document.createElement("div");
                 noUnits.classList.add("donor-banner");
-                noUnits.innerHTML = `There are no units that could give any ${slot} with the current roster.`;
+                noUnits.innerHTML = `There are no units that could give any ${slot} in the current roster.`;
                 SKILL_DONORS_LIST.appendChild(noUnits);
                 return;
             }
@@ -280,13 +281,16 @@
                 skillSubtitle.innerHTML = skill;
                 const skillTitleContainer = document.createElement("div");
                 skillTitleContainer.classList.add("skill-title");
+                const skillIcon = document.createElement("img");
+                skillIcon.classList.add("skill-icon");
 
                 if (!["weapon", "assist", "special"].includes(slot)) {
-                    const skillIcon = document.createElement("img");
                     skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}`;
-                    skillIcon.classList.add("skill-icon");
-                    skillTitleContainer.appendChild(skillIcon);
+                } else {
+                    skillIcon.src = `./static/${slot}-icon.png`;
                 }
+
+                skillTitleContainer.appendChild(skillIcon);
                 SKILL_DONORS_LIST.appendChild(skillSubtitle);
 
                 skillTitleContainer.appendChild(skillSubtitle);
