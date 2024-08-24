@@ -450,7 +450,7 @@ footer {
     gap: 0.5rem;
     
     img {
-        height: calc(var(--cell-size) / 3);
+        height: calc(var(--cell-size) / 4);
     }
 }
 
