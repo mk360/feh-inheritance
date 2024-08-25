@@ -29,6 +29,17 @@ func convertSlotName(slot string) string {
 	}
 }
 
+func convertToDecimal(hexArray []string) []string {
+	var arr = make([]string, len(hexArray))
+	for i, el := range hexArray {
+		dec, _ := strconv.ParseInt(el, 16, 64)
+		stringDecimal := strconv.Itoa(int(dec))
+		arr[i] = stringDecimal
+	}
+
+	return arr
+}
+
 func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []byte {
 	var query = url.Values{}
 	query.Set("action", "cargoquery")
@@ -48,13 +59,14 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 	var singleUnitData structs.SingleUnitWikiResponse = structs.SingleUnitWikiResponse{}
 	singleUnitBytes, _ := io.ReadAll(resp.Body)
 	json.Unmarshal(singleUnitBytes, &singleUnitData)
+	var arrayIntIds = convertToDecimal(strings.Split(intIDs[0], ","))
 
 	var moveType = singleUnitData.CargoQuery[0].Title.MoveType
 	var weaponType = singleUnitData.CargoQuery[0].Title.WeaponType
 
 	var conditions []string = []string{"Next is null", "Units.Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Units.Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\""}
 
-	var withoutSelf = array.FilterOut(intIDs, searchedIntID)
+	var withoutSelf = array.FilterOut(arrayIntIds, searchedIntID)
 	conditions = append(conditions, "IntID in ("+strings.Join(withoutSelf, ",")+")")
 
 	if len(singleUnitData.CargoQuery) > 0 {

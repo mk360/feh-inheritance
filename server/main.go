@@ -52,7 +52,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.Form["mode"][0] == "roster" && len(req.Form["intIDs"]) == 0 {
+	if req.Form["mode"][0] == "roster" && len(req.Form["ids"]) == 0 {
 		response.WriteHeader(400)
 		response.Write([]byte("You should send an \"intIDs\" array when searching inside the roster\n"))
 		return
@@ -63,7 +63,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, weapon, assist or special\n"))
 	}
 
-	var skills = queries.GetInheritableSkills(req.Form["intIDs"], req.Form["searchedId"][0], req.Form["slot"][0])
+	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0])
 
 	response.Write(skills)
 }
