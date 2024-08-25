@@ -254,14 +254,11 @@
     function checkInheritableSkills(slot, hero) {
         const { unitId } = hero.dataset;
         const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
-        const urlSearchParams = new URLSearchParams();
-        for (let { id, favorite } of existingIds) {
-            if (!favorite && id !== unitId) {
-                urlSearchParams.append("intIDs", id);
-            }
-        }
+        const withoutFavorites = existingIds.filter(({ favorite }) => !favorite);
+        const hexIds = withoutFavorites.map(({ id }) => (+id).toString(16));
+
         document.getElementById("inheritables").click();
-        fetch(`${API_URL}/skills?slot=${slot}&searchedId=${unitId}&mode=roster&${urlSearchParams.toString()}`).then((res) => {
+        fetch(`${API_URL}/skills?slot=${slot}&searchedId=${unitId}&mode=roster&ids=${hexIds.join(",")}`).then((res) => {
             return res.json();
         }).then((skillList) => {
             SKILL_DONORS_LIST.innerHTML = "";

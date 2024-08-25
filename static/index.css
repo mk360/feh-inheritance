@@ -89,7 +89,7 @@ body {
 
 header {
     text-align: center;
-    font-size: 4rem;
+    font-size: 3rem;
     color: var(--feh-gold);
 }
 
@@ -441,12 +441,12 @@ main {
 
 footer {
     color: var(--feh-gold);
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     padding: 1rem;
     border-radius: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 0.5rem;
     
     img {
