@@ -100,12 +100,6 @@ func convertImageType(imgType string) string {
 	return ""
 }
 
-var noRedirectHttpClient = http.Client{
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	},
-}
-
 func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	if len(request.Form["id"]) == 0 {
@@ -140,13 +134,11 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
-	imageRequest, _ := http.NewRequest("GET", url, nil)
-	imageCDNLocation, _ := noRedirectHttpClient.Do(imageRequest)
+	imageCDNLocation, _ := http.Get(url)
 
 	defer imageCDNLocation.Body.Close()
-	response.Header().Set("Location", imageCDNLocation.Header.Get("Location"))
-	response.Header().Set("Cache-Control", "max-age=604800")
-	response.WriteHeader(302)
+	imageByteData, _ := io.ReadAll(imageCDNLocation.Body)
+	response.Write(imageByteData)
 }
 
 func main() {
