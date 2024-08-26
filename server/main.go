@@ -3,6 +3,7 @@ package main
 // example query : curl "http://localhost:3333/skills?searchedId=112&intIDs=112&intIDs=213&mode=roster&slot=C"
 import (
 	"encoding/json"
+	"fmt"
 	"inheritance/array"
 	"inheritance/common"
 	"inheritance/queries"
@@ -133,6 +134,11 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	data, _ := io.ReadAll(resp.Body)
 	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
 	json.Unmarshal(data, &unmarshaled)
+	if len(unmarshaled.CargoQuery) == 0 {
+		fmt.Println("Searched for a missing id, " + request.Form.Get("id"))
+		response.WriteHeader(404)
+		return
+	}
 	var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
 	imageRequest, _ := http.NewRequest("GET", url, nil)
 	imageCDNLocation, _ := noRedirectHttpClient.Do(imageRequest)
