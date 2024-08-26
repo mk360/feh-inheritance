@@ -38,8 +38,10 @@ type SingleUnitWikiResponse struct {
 type SearchUnitsWikiResponse struct {
 	CargoQuery []struct {
 		Title struct {
-			IntID string `json:"IntID"`
-			Page  string `json:"Page"`
+			IntID        string `json:"IntID"`
+			Page         string `json:"Page"`
+			WeaponType   string `json:"WeaponType"`
+			MovementType string `json:"MoveType"`
 		} `json:"title"`
 	} `json:"cargoquery"`
 }

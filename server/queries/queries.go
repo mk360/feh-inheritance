@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"inheritance/array"
+	"inheritance/common"
 	"inheritance/structs"
 	"io"
 	"log"
@@ -145,13 +146,13 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 	return []byte("")
 }
 
-func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) []int {
+func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) []structs.SearchUnitsResponse {
 	var query = url.Values{}
 	query.Add("action", "cargoquery")
 	query.Add("format", "json")
 	query.Add("tables", "Units")
 	query.Add("limit", strconv.Itoa(pageSize))
-	query.Add("fields", "IntID")
+	query.Add("fields", "IntID, WeaponType, MoveType, _pageName=Page")
 	query.Add("order_by", "ReleaseDate DESC")
 	query.Add("offset", strconv.Itoa(page*pageSize))
 
@@ -172,7 +173,7 @@ func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) [
 	if e != nil {
 		fmt.Println("error with query")
 		fmt.Println(query)
-		var empty []int = []int{}
+		var empty []structs.SearchUnitsResponse = []structs.SearchUnitsResponse{}
 
 		return empty
 	}
@@ -183,11 +184,17 @@ func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) [
 	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
 	json.Unmarshal(data, &unmarshaled)
 
-	searchResponse := make([]int, len(unmarshaled.CargoQuery))
+	searchResponse := make([]structs.SearchUnitsResponse, len(unmarshaled.CargoQuery))
 
 	for i, entry := range unmarshaled.CargoQuery {
 		integerId, _ := strconv.Atoi(entry.Title.IntID)
-		searchResponse[i] = integerId
+		var returnedEntry structs.SearchUnitsResponse = structs.SearchUnitsResponse{
+			ID:           integerId,
+			MovementType: common.MOVEMENT_TYPES[entry.Title.MovementType],
+			WeaponType:   common.WEAPON_TYPES[entry.Title.WeaponType],
+			Name:         entry.Title.Page,
+		}
+		searchResponse[i] = returnedEntry
 	}
 
 	return searchResponse

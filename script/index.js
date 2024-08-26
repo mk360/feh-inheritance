@@ -179,11 +179,17 @@
             signal: abortController.signal
         }).catch(() => {}).then((response) => response.json()).then((elements) => {
             if (!append) {
-                while (SEARCH_RESULTS.lastChild && SEARCH_RESULTS.lastChild.nodeName !== "DIV") SEARCH_RESULTS.removeChild(SEARCH_RESULTS.lastChild);
+                SEARCH_RESULTS.innerHTML = "";
             }
 
             for (let elem of elements) {
-                const { heroButton } = createHeroItem(elem);
+                const { wpn, mvt, id, name} = elem;
+                const { heroButton, iconsContainer } = createHeroItem(id, true);
+                // const weaponTypeImage = document.createElement("img");
+                // const stringWeaponType = WEAPON_TYPES[wpn].replace(/ /g, "_");
+                // weaponTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Filepath/Icon_Class_${stringWeaponType}.png`;
+                // weaponTypeImage.classList.add("top-left");
+                // iconsContainer.appendChild(weaponTypeImage);
                 SEARCH_RESULTS.appendChild(heroButton);
                 heroButton.onclick = addToBarracks;
             }
