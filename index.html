@@ -2,19 +2,19 @@
 <html>
     <head>
         <link rel="stylesheet" href="./static/index.css" />
-        <title>FEH Inherit Checker</title>
+        <title>FEH Inheritance Viewer</title>
         <meta name="referrer" content="no-referrer" />
-        <meta name="title" content="FEH Inherit Checker" />
-        <meta name="description" content="Check who your favorite units can inherit skills from, in a more digestible way than in the game." />
+        <meta name="title" content="FEH Inheritance Viewer" />
+        <meta name="description" content="Check who your favorite Heroes can inherit skills from, in a more digestible way than in the game." />
         <meta property="og:type content="website" />
         <meta property="og:url" content="https://feh-inheritance.tonion-the-onion.com/" />
-        <meta property="og:title" content="FEH Inherit Checker" />
-        <meta property="og:description" content="Check who your favorite units can inherit skills from, in a more digestible way than in the game." />
+        <meta property="og:title" content="FEH Inheritance Viewer" />
+        <meta property="og:description" content="Check who your favorite Heroes can inherit skills from, in a more digestible way than in the game." />
         <meta property="og:image" content="https://replug.io/images/example.png" />
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content="https://feh-inheritance.tonion-the-onion.com/" />
-        <meta property="twitter:title" content="FEH Inherit Checker" />
-        <meta property="twitter:description" content="Check who your favorite units can inherit skills from, in a more digestible way than in the game." />
+        <meta property="twitter:title" content="FEH Inheritance Viewer" />
+        <meta property="twitter:description" content="Check who your favorite Heroes can inherit skills from, in a more digestible way than in the game." />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-0LLBLJMCS8"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
@@ -43,7 +43,7 @@
                         <ul>
                             <li>
                                 <input type="radio" checked id="search" name="tab" />
-                                <label for="search">Search Characters</label>
+                                <label for="search">Heroes Search</label>
                             </li>
                             <li>
                                 <input type="radio" id="inheritables" name="tab" />
@@ -52,13 +52,13 @@
                         </ul>
                     </nav>
                     <div class="input-container">
-                        <input placeholder="Search for a Hero to add to your roster" id="search-query" />
+                        <input placeholder="Search for a Hero to add to the roster" id="search-query" />
                     </div>
                     <div class="tab-content" id="search-content">
                     </div>
                     <div class="tab-content hide" id="inheritables-content">
                         <div id="upgrade-heading" class="heading">
-                            Select a character from your roster to upgrade. Mark a character as a favorite to omit them from the search.
+                            Select a Hero from your roster to see what they can inherit. Mark a Hero as a favorite to omit them from the search.
                         </div>
                         <div id="skill-filters" class="hide">
                             <input type="radio" name="skill-filter" id="weapon" class="filter-input" />
