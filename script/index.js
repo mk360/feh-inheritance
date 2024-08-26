@@ -223,7 +223,6 @@
         const img = document.createElement("img");
         img.loading = "lazy";
         img.src = `${API_URL}/img?id=${heroId}&imgType=portrait`;
-        img.loading = "lazy";
         img.classList.add("portrait");
         heroButton.appendChild(img);
         heroButton.dataset.unitId = heroId;
@@ -287,6 +286,7 @@
                 skillTitleContainer.classList.add("skill-title");
                 const skillIcon = document.createElement("img");
                 skillIcon.classList.add("skill-icon");
+                skillIcon.loading = "lazy";
 
                 if (!["weapon", "assist", "special"].includes(slot)) {
                     skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}`;
@@ -307,6 +307,7 @@
                     donorBanner.classList.add("donor-banner");
                     donorBanner.innerText = characterName;
                     const donorImage = document.createElement("img");
+                    donorImage.loading = "lazy";
                     donorImage.src = `${API_URL}/img?id=${unitId}&imgType=battle`;
                     donorImage.classList.add("skill-donor");
                     donorBanner.appendChild(donorImage);
