@@ -221,6 +221,7 @@
         frame.classList.add("hero-frame");
 
         const img = document.createElement("img");
+        img.loading = "lazy";
         img.src = `${API_URL}/img?id=${heroId}&imgType=portrait`;
         img.loading = "lazy";
         img.classList.add("portrait");
