@@ -159,7 +159,7 @@ func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) [
 	var where []string = []string{}
 
 	if len(idsToOmit) > 0 {
-		where = append(where, "Properties holds not \"enemy\" and IntID not in ("+strings.Join(idsToOmit, ",")+")")
+		where = append(where, "Properties holds not \"story\" and Properties holds not \"enemy\" and IntID not in ("+strings.Join(idsToOmit, ",")+")")
 	}
 
 	if searchQuery != "" {
