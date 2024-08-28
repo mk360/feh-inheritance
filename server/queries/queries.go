@@ -101,7 +101,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 			if !ok {
 				parsedResponse.Skills[responseTitle.Title.Name] = structs.SkillInfos{
 					Ids:  []int{},
-					Icon: responseTitle.Title.Icon,
+					Icon: strings.Replace(responseTitle.Title.Icon, ".png", "", 1),
 				}
 			}
 

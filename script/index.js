@@ -292,7 +292,7 @@
                 skillIcon.loading = "lazy";
 
                 if (!["weapon", "assist", "special"].includes(slot)) {
-                    skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}`;
+                    skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}.png`;
                 } else {
                     skillIcon.src = `./static/${slot}-icon.png`;
                 }
