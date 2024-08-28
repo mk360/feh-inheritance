@@ -79,13 +79,10 @@
                 if (savedItem) {
                     const { heroButton, iconsContainer } = createHeroItem(savedItem.id, true);
                     const deleteButton = createDeleteIcon();
-                    const favoriteIcon = createFavoritesIcon();
+                    const favoriteIcon = createFavoritesIcon(savedItem.favorite);
                     heroButton.dataset.favorite = savedItem.favorite;
                     deleteButton.onclick = handleDeleteHeroEvent(savedItem.id, heroButton);
                     favoriteIcon.onclick = handleFavoriteHeroEvent(heroButton, savedItem.favorite);
-                    if (savedItem.favorite === true) {
-                        favoriteIcon.src = "./static/favorite-on.png";
-                    }
                     iconsContainer.appendChild(deleteButton);
                     iconsContainer.appendChild(favoriteIcon);
                     heroButton.onclick = function(){
@@ -149,7 +146,7 @@
     function addToBarracks() {
         const newButtons = createHeroItem(this.dataset.unitId, true);
         const deleteIcon = createDeleteIcon();
-        const favoriteIcon = createFavoritesIcon();
+        const favoriteIcon = createFavoritesIcon(false);
         favoriteIcon.onclick = handleFavoriteHeroEvent(newButtons.heroButton, false);
         deleteIcon.onclick = handleDeleteHeroEvent(this.dataset.unitId, newButtons.heroButton);
         newButtons.iconsContainer.appendChild(deleteIcon);
@@ -256,9 +253,9 @@
         return deleteButton;
     }
 
-    function createFavoritesIcon() {
+    function createFavoritesIcon(initialState) {
         const img = document.createElement("img");
-        img.src = "./static/favorite-off.png";
+        img.src = initialState ? "./static/favorite-on.png" : "./static/favorite-off.png";
         img.classList.add("favorite-button");
         return img;
     }
@@ -345,10 +342,9 @@
 
                 for (let data of loadedData) {
                     const entry = createHeroItem(data.id, true);
-                    const favoriteIcon = createFavoritesIcon();
+                    const favoriteIcon = createFavoritesIcon(data.favorite);
                     const deleteIcon = createDeleteIcon();
-                    entry.heroButton.dataset.favorite = entry.favorite;
-                    favoriteIcon.src = entry.favorite ? "./static/favorite-on.png" : "./static/favorite-off.png";
+                    entry.heroButton.dataset.favorite = data.favorite;
                     entry.iconsContainer.appendChild(favoriteIcon);
                     entry.iconsContainer.appendChild(deleteIcon);
                     favoriteIcon.onclick = handleFavoriteHeroEvent(entry.heroButton, false);
