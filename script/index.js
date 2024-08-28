@@ -348,9 +348,11 @@
                     const favoriteIcon = createFavoritesIcon();
                     const deleteIcon = createDeleteIcon();
                     entry.heroButton.dataset.favorite = entry.favorite;
+                    favoriteIcon.src = entry.favorite ? "./static/favorite-on.png" : "./static/favorite-off.png";
                     entry.iconsContainer.appendChild(favoriteIcon);
                     entry.iconsContainer.appendChild(deleteIcon);
                     favoriteIcon.onclick = handleFavoriteHeroEvent(entry.heroButton, false);
+
                     deleteIcon.onclick = handleDeleteHeroEvent(entry.heroButton.dataset.unitId, entry.heroButton);
                     BARRACKS.appendChild(entry.heroButton);
                 }
