@@ -5,6 +5,7 @@
     --delete-dark-red: #721717;
     --delete-red: #A02D2D;
     --cell-size: clamp(120px, 4vw, 160px);
+    --shadow: 2px 2px 5px black;
 }
 
 @font-face {
@@ -151,6 +152,7 @@ main {
     row-gap: clamp(1rem, 3vw, 2.5rem);
     grid-template-columns: repeat(auto-fit, var(--cell-size));
     grid-template-rows: auto var(--cell-size);
+    margin-bottom: 2vh;
 }
 
 .search-frame {
@@ -195,8 +197,29 @@ main {
     padding: 1rem 0.5rem;
     font-size: 1.5rem;
     font-weight: 600;
+    border-radius: 10px;
     cursor: pointer;
-    box-shadow: 2px 2px 5px black;
+    box-shadow: var(--shadow);
+    border: 0;
+}
+
+.cta-label {
+    display: flex;
+    text-align: center;
+    align-items: center;
+}
+
+#saves {
+    display: flex;
+    gap: 4vw;
+    align-items: center;
+}
+
+.extra {
+    display: grid;
+    column-gap: 2vw;
+    grid-template-columns: repeat(auto-fit, var(--cell-size));
+    grid-template-rows: repeat(auto-fit, var(--cell-size));
 }
 
 .favorite-button {
@@ -288,7 +311,7 @@ main {
         }
     }
 
-    #barracks, #search-content {
+    #barracks, #search-content, .extra {
         gap: 4vw;
     }
 
@@ -327,7 +350,6 @@ main {
     color: var(--feh-gold);
     background-color: var(--navy-blue);
     border-radius: 10px;
-    box-shadow: 2px 2px 5px black;
 
     .character-selected {
         flex-direction: column;

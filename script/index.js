@@ -9,6 +9,9 @@
     const HERO_SEARCH = document.getElementById("search-query");
     const SKILL_DONORS_LIST = document.getElementById("skill-donors");
     const SKILL_FILTERS = document.getElementById("skill-filters");
+    const EXPORT_BUTTON = document.getElementById("export");
+    const IMPORT_BUTTON = document.getElementById("import");
+
     const API_URL = "https://api.feh-inheritance.tonion-the-onion.com";
     let lastCheckedHero;
 
@@ -17,6 +20,9 @@
     let currentFilter = "";
 
     document.getElementById("search").click();
+
+    EXPORT_BUTTON.onclick = exportRoster;
+    IMPORT_BUTTON.onchange = importRoster;
 
     Array.from(document.getElementsByClassName("filter-input")).forEach((input) => {
         input.onclick = function() {
@@ -317,4 +323,57 @@
             }
         });
     }
+
+    function importRoster() {
+        const [file] = this.files;
+        const fileReader = new FileReader();
+        fileReader.onerror = function() {
+            alert("An error happened, please try again.");
+        }
+        fileReader.onloadend = ({ target }) => {
+            const { result } = target;
+            try {
+                const loadedData = JSON.parse(result);
+                const corruptedObject = loadedData.find((entry) => {
+                    return typeof entry !== "object" || !entry.id || !("favorite" in entry);
+                });
+                if (corruptedObject) {
+                    throw new Error();   
+                }
+
+                BARRACKS.innerHTML = "";
+
+                for (let data of loadedData) {
+                    const entry = createHeroItem(data.id, true);
+                    const favoriteIcon = createFavoritesIcon();
+                    const deleteIcon = createDeleteIcon();
+                    entry.heroButton.dataset.favorite = entry.favorite;
+                    entry.iconsContainer.appendChild(favoriteIcon);
+                    entry.iconsContainer.appendChild(deleteIcon);
+                    favoriteIcon.onclick = handleFavoriteHeroEvent(entry.heroButton, false);
+                    deleteIcon.onclick = handleDeleteHeroEvent(entry.heroButton.dataset.unitId, entry.heroButton);
+                    BARRACKS.appendChild(entry.heroButton);
+                }
+
+                saveBarracks();
+
+            } catch (e) {
+                alert("There was an error parsing your file. Please try with another one.");
+            }
+        }
+        fileReader.readAsText(file);
+    }
+
+    function exportRoster() {
+        const stringified = JSON.stringify(JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY)));
+        const link = document.createElement("a");
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.download = "feh-roster.json";
+        const blob = new Blob([stringified], { type: "text/json"});
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.click();
+        document.body.removeChild(link);
+    };
 })();
