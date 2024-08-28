@@ -134,7 +134,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 			_, unitOk := parsedResponse.Units[conv]
 
 			if !unitOk {
-				parsedResponse.Units[conv] = responseTitle.Title.Unit
+				parsedResponse.Units[conv] = strings.Replace(responseTitle.Title.Unit, ": ", ":", 1)
 			}
 		}
 
