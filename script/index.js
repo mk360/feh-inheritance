@@ -308,7 +308,7 @@
                     const characterName = skillList.units[unitId];
                     const donorBanner = document.createElement("div");
                     donorBanner.classList.add("donor-banner");
-                    donorBanner.innerText = characterName;
+                    donorBanner.innerText = characterName.replace(":", ": ");
                     const donorImage = document.createElement("img");
                     donorImage.loading = "lazy";
                     donorImage.src = `${API_URL}/img?id=${unitId}&imgType=battle`;
