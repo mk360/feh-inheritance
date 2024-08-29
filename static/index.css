@@ -313,19 +313,30 @@ main {
     gap: 0.5vw;
 }
 
-footer {
-    color: var(--feh-gold);
-    font-size: 0.9rem;
-    padding: 1rem;
-    border-radius: 10px;
+.skill-subtitle {
+    background: linear-gradient(to right, var(--feh-gold), white);
+    color: transparent;
+    background-clip: text;
+    font-size: 3vh;
+}
+
+.donor-banner {
+    background: linear-gradient(to left, var(--feh-light-blue), var(--navy-blue) 20%);
+    height: var(--cell-size);
     display: flex;
+    justify-content: center;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    
-    img {
-        height: calc(var(--cell-size) / 4);
-    }
+    color: var(--feh-gold);
+    font-size: 1.4rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    text-align: center;
+    position: relative;
+}
+
+.skill-icon {
+    height: calc(var(--cell-size) / 3);
+    width: calc(var(--cell-size) / 3);
 }
 
 @media screen and (max-width: 1600px) {
@@ -350,7 +361,7 @@ footer {
 
     .skill-filter-label {
         img {
-            height: calc(var(--cell-size)/2);
+            height: calc(var(--cell-size ) / 2.5);
         }
     }
 
@@ -371,12 +382,17 @@ footer {
         }
     }
 
-    footer {
-        font-size: 2rem;
+    .skill-subtitle {
+        font-size: 2.5vh;
+    }
 
-        img {
-            height: calc(var(--cell-size) / 3);
-        }
+    .donor-banner {
+        font-size: 2rem;
+    }
+
+    .skill-icon {
+        height: calc(var(--cell-size) / 2.5);
+        width: calc(var(--cell-size) / 2.5);
     }
 }
 
@@ -469,36 +485,11 @@ footer {
     inset: 0;
 }
 
-.skill-subtitle {
-    background: linear-gradient(to right, var(--feh-gold), white);
-    color: transparent;
-    background-clip: text;
-    font-size: 3vh;
-}
-
-.skill-icon {
-    height: calc(var(--cell-size) / 3);
-    width: calc(var(--cell-size) / 3);
-}
-
 .target-banner {
     background: linear-gradient(to right, var(--feh-light-blue), var(--navy-blue) 20%);
     position: relative;
     height: var(--cell-size);
     padding: 0;
-}
-
-.donor-banner {
-    background: linear-gradient(to left, var(--feh-light-blue), var(--navy-blue) 20%);
-    height: var(--cell-size);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--feh-gold);
-    font-size: 1.4rem;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    position: relative;
 }
 
 #target-portrait {
