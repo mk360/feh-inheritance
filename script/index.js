@@ -1,5 +1,4 @@
 (function initiateApp() {
-    // add a web worker that downloads and caches the images
     const LOCALSTORAGE_KEY = "roster"
     const MOVEMENT_TYPES = ["Infantry", "Armored", "Flying", "Cavalry"];
     const WEAPON_TYPES = ["Red Sword", "Blue Lance", "Green Axe", "Colorless Staff"];
@@ -387,4 +386,12 @@
         link.click();
         document.body.removeChild(link);
     };
+
+    function adjustHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    window.addEventListener('load', adjustHeight);
+    window.addEventListener('resize', adjustHeight);
 })();
