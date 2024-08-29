@@ -271,8 +271,21 @@
             return res.json();
         }).then((skillList) => {
             SKILL_DONORS_LIST.innerHTML = "";
+            const UPGRADE_HEADING = document.getElementById("upgrade-heading");
             SKILL_FILTERS.classList.remove("hide");
-            document.getElementById("upgrade-heading").innerHTML = `Skills that ${skillList.searched} can inherit`
+            UPGRADE_HEADING.innerHTML = `Skills that ${skillList.searched} can inherit`
+            UPGRADE_HEADING.classList.add("target-banner");
+            let targetPortrait = document.getElementById("target-portrait");
+
+            if (!targetPortrait) {
+                targetPortrait = document.createElement("img");
+                targetPortrait.id = "target-portrait";
+                targetPortrait.loading = "lazy";
+                UPGRADE_HEADING.appendChild(targetPortrait);
+            }
+
+            targetPortrait.src = `${API_URL}/img?id=${unitId}&imgType=battle`;
+
             if (!Object.keys(skillList.Skills).length) {
                 const noUnits = document.createElement("div");
                 noUnits.classList.add("donor-banner");

@@ -440,6 +440,13 @@ main {
     width: calc(var(--cell-size) / 3);
 }
 
+.target-banner {
+    background: linear-gradient(to right, var(--feh-light-blue), var(--navy-blue) 20%);
+    position: relative;
+    height: var(--cell-size);
+    padding: 0;
+}
+
 .donor-banner {
     background: linear-gradient(to left, var(--feh-light-blue), var(--navy-blue) 20%);
     height: var(--cell-size);
@@ -451,6 +458,13 @@ main {
     border-radius: 10px;
     margin-bottom: 1rem;
     position: relative;
+}
+
+#target-portrait {
+    height: 100%;
+    position: absolute;
+    mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), black);
+    left: 0;
 }
 
 .skill-donor {
