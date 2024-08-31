@@ -78,6 +78,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 		query.Set("order_by", "Skills.Name ASC, Unit ASC")
 		query.Set("limit", "500")
 		query.Set("where", strings.Join(conditions, " and "))
+		query.Del("group_by")
 
 		resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
 

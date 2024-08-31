@@ -366,6 +366,7 @@
                 }
 
                 saveBarracks();
+                loadSearchSuggestions(0);
 
             } catch (e) {
                 alert("There was an error parsing your file. Please try with another one.");
