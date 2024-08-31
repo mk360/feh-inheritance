@@ -80,63 +80,76 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 		query.Set("where", strings.Join(conditions, " and "))
 		query.Del("group_by")
 
-		resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+		var offset int = 0
 
-		if e != nil {
-			log.Fatalln(e)
-		}
-
-		defer resp.Body.Close()
-
-		data, _ := io.ReadAll(resp.Body)
-
-		var skillResponse structs.SearchSkillsWikiResponse = structs.SearchSkillsWikiResponse{}
-		json.Unmarshal(data, &skillResponse)
 		var parsedResponse structs.SearchSkillsResponse = structs.SearchSkillsResponse{
 			Skills:   map[string]structs.SkillInfos{},
 			Units:    map[int]string{},
 			Searched: singleUnitData.CargoQuery[0].Title.Unit,
 		}
 
-		for _, responseTitle := range skillResponse.CargoQuery {
-			_, ok := parsedResponse.Skills[responseTitle.Title.Name]
-			if !ok {
-				parsedResponse.Skills[responseTitle.Title.Name] = structs.SkillInfos{
-					Ids:  []int{},
-					Icon: strings.Replace(responseTitle.Title.Icon, ".png", "", 1),
+		for {
+			query.Set("offset", strconv.Itoa(offset))
+			resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+
+			if e != nil {
+				log.Fatalln(e)
+			}
+
+			defer resp.Body.Close()
+
+			data, _ := io.ReadAll(resp.Body)
+
+			var skillResponse structs.SearchSkillsWikiResponse = structs.SearchSkillsWikiResponse{}
+			json.Unmarshal(data, &skillResponse)
+
+			for _, responseTitle := range skillResponse.CargoQuery {
+				_, ok := parsedResponse.Skills[responseTitle.Title.Name]
+				if !ok {
+					parsedResponse.Skills[responseTitle.Title.Name] = structs.SkillInfos{
+						Ids:  []int{},
+						Icon: strings.Replace(responseTitle.Title.Icon, ".png", "", 1),
+					}
+				}
+
+				conv, _ := strconv.Atoi(responseTitle.Title.IntID)
+
+				skillDictIds := parsedResponse.Skills[responseTitle.Title.Name]
+				skillDictIds.Ids = append(skillDictIds.Ids, conv)
+
+				parsedResponse.Skills[responseTitle.Title.Name] = skillDictIds
+
+				matches := wikiNameReplacementRegex.FindStringSubmatch(responseTitle.Title.Required)
+				// cases like "Fort. Def/Res 2" need special treatment because the "Required" field actually uses the WikiName, not the real name
+				// so we split the string where the stats need a slash
+				// and then manually add the slash
+
+				var patchedName = responseTitle.Title.Required
+
+				if len(matches) > 0 {
+					var firstStringHalf = matches[wikiNameReplacementRegex.SubexpIndex("stat1")]
+					var secondStringHalf = matches[wikiNameReplacementRegex.SubexpIndex("stat2")]
+					patchedName = firstStringHalf + "/" + secondStringHalf
+				}
+
+				currentLearners, requiredSkillExists := parsedResponse.Skills[patchedName]
+
+				if requiredSkillExists && array.Equals(currentLearners.Ids, parsedResponse.Skills[responseTitle.Title.Name].Ids) {
+					delete(parsedResponse.Skills, patchedName)
+				}
+
+				_, unitOk := parsedResponse.Units[conv]
+
+				if !unitOk {
+					parsedResponse.Units[conv] = strings.Replace(responseTitle.Title.Unit, ": ", ":", 1)
 				}
 			}
 
-			conv, _ := strconv.Atoi(responseTitle.Title.IntID)
-
-			skillDictIds := parsedResponse.Skills[responseTitle.Title.Name]
-			skillDictIds.Ids = append(skillDictIds.Ids, conv)
-
-			parsedResponse.Skills[responseTitle.Title.Name] = skillDictIds
-
-			matches := wikiNameReplacementRegex.FindStringSubmatch(responseTitle.Title.Required)
-			// cases like "Fort. Def/Res 2" need special treatment because the "Required" field actually uses the WikiName, not the real name
-			// so we split the string where the stats need a slash
-			// and then manually add the slash
-
-			var patchedName = responseTitle.Title.Required
-
-			if len(matches) > 0 {
-				var firstStringHalf = matches[wikiNameReplacementRegex.SubexpIndex("stat1")]
-				var secondStringHalf = matches[wikiNameReplacementRegex.SubexpIndex("stat2")]
-				patchedName = firstStringHalf + "/" + secondStringHalf
-			}
-
-			currentLearners, requiredSkillExists := parsedResponse.Skills[patchedName]
-
-			if requiredSkillExists && array.Equals(currentLearners.Ids, parsedResponse.Skills[responseTitle.Title.Name].Ids) {
-				delete(parsedResponse.Skills, patchedName)
-			}
-
-			_, unitOk := parsedResponse.Units[conv]
-
-			if !unitOk {
-				parsedResponse.Units[conv] = strings.Replace(responseTitle.Title.Unit, ": ", ":", 1)
+			if len(skillResponse.CargoQuery) == 500 {
+				offset += 500
+				query.Set("offset", strconv.Itoa(offset))
+			} else {
+				break
 			}
 		}
 
