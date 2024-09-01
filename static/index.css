@@ -241,7 +241,7 @@ main {
     grid-template-rows: repeat(auto-fit, var(--cell-size));
 }
 
-.favorite-button {
+.top-left {
     z-index: 1;
     border: 0;
     outline: 1px solid transparent;
@@ -253,6 +253,16 @@ main {
     &:hover {
         filter: brightness(500%);
     }
+}
+
+.top-right {
+    z-index: 1;
+    border: 0;
+    outline: 1px solid transparent;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 2rem;
 }
 
 #search-query {
@@ -366,7 +376,7 @@ main {
         }
     }
 
-    .favorite-button {
+    .top-left, .top-right {
         height: 3rem;
     }
 

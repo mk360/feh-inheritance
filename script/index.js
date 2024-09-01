@@ -143,7 +143,8 @@
     }
 
     function addToBarracks() {
-        const newButtons = createHeroItem(this.dataset.unitId, true);
+        // const portraitImg = this.getElementsByClassName("portrait")[0];
+        // const newButtons = createHeroItem(this.dataset.unitId, true, portraitImg.alt);
         const deleteIcon = createDeleteIcon();
         const favoriteIcon = createFavoritesIcon(false);
         favoriteIcon.onclick = handleFavoriteHeroEvent(newButtons.heroButton, false);
@@ -186,11 +187,21 @@
 
             for (let elem of elements) {
                 const { wpn, mvt, id, name} = elem;
-                const { heroButton, iconsContainer } = createHeroItem(id, true);
+                const { heroButton, iconsContainer } = createHeroItem(id, true, name);
                 // const weaponTypeImage = document.createElement("img");
                 // const stringWeaponType = WEAPON_TYPES[wpn].replace(/ /g, "_");
-                // weaponTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Filepath/Icon_Class_${stringWeaponType}.png`;
+                // weaponTypeImage.loading = "lazy";
+                // weaponTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Class_${stringWeaponType}.png`;
+                // weaponTypeImage.alt = stringWeaponType;
                 // weaponTypeImage.classList.add("top-left");
+
+                // const movementTypeImage = document.createElement("img");
+                // movementTypeImage.loading = "lazy";
+                // const stringMovementType = MOVEMENT_TYPES[mvt];
+                // movementTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Move_${stringMovementType}.png`;
+                // movementTypeImage.classList.add("top-right");
+                
+                // iconsContainer.appendChild(movementTypeImage);
                 // iconsContainer.appendChild(weaponTypeImage);
                 SEARCH_RESULTS.appendChild(heroButton);
                 heroButton.onclick = addToBarracks;
@@ -215,11 +226,11 @@
         });
     }
 
-    function createHeroItem(heroId, addIcons) {
+    function createHeroItem(heroId, addIcons, alt) {
         const heroButton = document.createElement("button");
         heroButton.classList.add("hero-container");
         const frame = document.createElement("img");
-        frame.alt = "";
+        frame.alt = alt ?? "";
         frame.src = "./static/frame.webp";
         frame.classList.add("hero-frame");
 
@@ -256,7 +267,7 @@
     function createFavoritesIcon(initialState) {
         const img = document.createElement("img");
         img.src = initialState ? "./static/favorite-on.png" : "./static/favorite-off.png";
-        img.classList.add("favorite-button");
+        img.classList.add("top-left");
         return img;
     }
 
