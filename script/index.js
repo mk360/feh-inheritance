@@ -219,6 +219,7 @@
         const heroButton = document.createElement("button");
         heroButton.classList.add("hero-container");
         const frame = document.createElement("img");
+        frame.alt = "";
         frame.src = "./static/frame.webp";
         frame.classList.add("hero-frame");
 
