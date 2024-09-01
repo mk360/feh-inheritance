@@ -283,6 +283,7 @@
                 UPGRADE_HEADING.appendChild(targetPortrait);
             }
 
+            targetPortrait.alt = "";
             targetPortrait.src = `${API_URL}/img?id=${unitId}&imgType=battle`;
 
             if (!Object.keys(skillList.Skills).length) {
