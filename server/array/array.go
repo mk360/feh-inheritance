@@ -11,7 +11,7 @@ func FilterOut(arr []string, el string) []string {
 	return copy
 }
 
-func Includes(arr []string, el string) bool {
+func Includes[T comparable](arr []T, el T) bool {
 	for _, element := range arr {
 		if element == el {
 			return true
@@ -21,7 +21,7 @@ func Includes(arr []string, el string) bool {
 	return false
 }
 
-func Equals(array1 []int, array2 []int) bool {
+func Equals[T comparable](array1 []T, array2 []T) bool {
 	if len(array1) != len(array2) {
 		return false
 	}
