@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -115,7 +116,9 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 				conv, _ := strconv.Atoi(responseTitle.Title.IntID)
 
 				skillDictIds := parsedResponse.Skills[responseTitle.Title.Name]
-				skillDictIds.Ids = append(skillDictIds.Ids, conv)
+				if !array.Includes(skillDictIds.Ids, conv) {
+					skillDictIds.Ids = append(skillDictIds.Ids, conv)
+				}
 
 				parsedResponse.Skills[responseTitle.Title.Name] = skillDictIds
 
@@ -161,7 +164,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 	return []byte("")
 }
 
-func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) []structs.SearchUnitsResponse {
+func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []string {
 	var query = url.Values{}
 	query.Add("action", "cargoquery")
 	query.Add("format", "json")
@@ -173,8 +176,9 @@ func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) [
 
 	var where []string = []string{}
 
-	if len(idsToOmit) > 0 {
-		where = append(where, "Properties holds not \"story\" and Properties holds not \"enemy\" and IntID not in ("+strings.Join(idsToOmit, ",")+")")
+	if len(ids) > 0 {
+		var splitIds = strings.Split(ids[0], ",")
+		where = append(where, "Properties holds not \"story\" and Properties holds not \"enemy\" and IntID not in ("+strings.Join(convertToDecimal(splitIds), ",")+")")
 	}
 
 	if searchQuery != "" {
@@ -188,7 +192,7 @@ func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) [
 	if e != nil {
 		fmt.Println("error with query")
 		fmt.Println(query)
-		var empty []structs.SearchUnitsResponse = []structs.SearchUnitsResponse{}
+		var empty []string = []string{}
 
 		return empty
 	}
@@ -199,18 +203,51 @@ func GetHeroes(searchQuery string, idsToOmit []string, page int, pageSize int) [
 	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
 	json.Unmarshal(data, &unmarshaled)
 
-	searchResponse := make([]structs.SearchUnitsResponse, len(unmarshaled.CargoQuery))
+	searchResponse := make([]string, len(unmarshaled.CargoQuery))
 
 	for i, entry := range unmarshaled.CargoQuery {
-		integerId, _ := strconv.Atoi(entry.Title.IntID)
-		var returnedEntry structs.SearchUnitsResponse = structs.SearchUnitsResponse{
-			ID:           integerId,
-			MovementType: common.MOVEMENT_TYPES[entry.Title.MovementType],
-			WeaponType:   common.WEAPON_TYPES[entry.Title.WeaponType],
-			Name:         entry.Title.Page,
-		}
-		searchResponse[i] = returnedEntry
+		var movementTypeString = strconv.Itoa(common.MOVEMENT_TYPES[entry.Title.MovementType])
+		var weaponTypeString = strconv.Itoa(common.WEAPON_TYPES[entry.Title.WeaponType])
+		var returnedString = entry.Title.IntID + "-" + movementTypeString + "-" + weaponTypeString + "-" + entry.Title.Page
+
+		searchResponse[i] = returnedString
 	}
 
 	return searchResponse
+}
+
+func GetBarracksHeroes(ids []string) []string {
+	var dec = convertToDecimal(ids)
+	var query = url.Values{}
+	query.Add("action", "cargoquery")
+	query.Add("format", "json")
+	query.Add("tables", "Units")
+	query.Add("fields", "_pageName=Page, IntID")
+	query.Add("limit", "500")
+	query.Add("where", "Properties holds not \"story\" and Properties holds not \"enemy\" and IntID in ("+strings.Join(dec, ",")+")")
+	var offset int = 0
+
+	var arr []string = make([]string, len(ids))
+	for {
+		query.Set("offset", strconv.Itoa(offset))
+		resp, _ := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+		defer resp.Body.Close()
+
+		var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
+		data, _ := io.ReadAll(resp.Body)
+		json.Unmarshal(data, &unmarshaled)
+
+		for _, hero := range unmarshaled.CargoQuery {
+			var index = slices.Index(dec, hero.Title.IntID)
+			arr[index] = hero.Title.Page
+		}
+
+		if len(unmarshaled.CargoQuery) == 500 {
+			offset += 500
+		} else {
+			break
+		}
+	}
+
+	return arr
 }

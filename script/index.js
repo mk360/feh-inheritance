@@ -1,16 +1,18 @@
 (function initiateApp() {
-    const LOCALSTORAGE_KEY = "roster"
+    const ROSTER_KEY = "roster";
     const MOVEMENT_TYPES = ["Infantry", "Armored", "Flying", "Cavalry"];
     const WEAPON_TYPES = ["Red Sword", "Blue Lance", "Green Axe", "Colorless Staff"];
     const BARRACKS = document.getElementById("barracks");
     const TABS = document.querySelectorAll('input[name="tab"]');
     const SEARCH_RESULTS = document.getElementById("search-content");
-    const HERO_SEARCH = document.getElementById("search-query");
+    const HERO_SEARCH = document.getElementById("global-hero-search");
+    const BARRACKS_SEARCH = document.getElementById("barracks-search");
     const SKILL_DONORS_LIST = document.getElementById("skill-donors");
     const SKILL_FILTERS = document.getElementById("skill-filters");
     const EXPORT_BUTTON = document.getElementById("export");
     const IMPORT_BUTTON = document.getElementById("import");
-
+    const CLEAR_BUTTON = document.getElementById("clear");
+    
     const API_URL = "https://api.feh-inheritance.tonion-the-onion.com";
     let lastCheckedHero;
 
@@ -22,6 +24,9 @@
 
     EXPORT_BUTTON.onclick = exportRoster;
     IMPORT_BUTTON.onchange = importRoster;
+    CLEAR_BUTTON.onclick = clearRoster;
+
+    BARRACKS_SEARCH.onkeyup = searchInsideBarracks;
 
     Array.from(document.getElementsByClassName("filter-input")).forEach((input) => {
         input.onclick = function() {
@@ -63,49 +68,50 @@
         }
     }
 
-    if (!localStorage.getItem(LOCALSTORAGE_KEY)) {
-        localStorage.setItem(LOCALSTORAGE_KEY, "[]");
+    if (localStorage.getItem(ROSTER_KEY) === null) {
+        localStorage.setItem(ROSTER_KEY, "[]");
     } else {
         loadBarracks();
+        updateBarracks();
     }
 
     loadSearchSuggestions(page);
 
     function loadBarracks() {
-        const items = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
+        const items = JSON.parse(localStorage.getItem(ROSTER_KEY) ?? "[]");
         if (items.length) {
-            for (let savedItem of items) {
-                if (savedItem) {
-                    const { heroButton, iconsContainer } = createHeroItem(savedItem.id, true);
-                    const deleteButton = createDeleteIcon();
-                    const favoriteIcon = createFavoritesIcon(savedItem.favorite);
-                    heroButton.dataset.favorite = savedItem.favorite;
-                    deleteButton.onclick = handleDeleteHeroEvent(savedItem.id, heroButton);
-                    favoriteIcon.onclick = handleFavoriteHeroEvent(heroButton, savedItem.favorite);
-                    iconsContainer.appendChild(deleteButton);
-                    iconsContainer.appendChild(favoriteIcon);
-                    heroButton.onclick = function(){
-                        lastCheckedHero = this;
-                        if (!currentFilter) {
-                            currentFilter = "weapon";
-                            document.getElementById(currentFilter).checked = true;
-                        }
-                        checkInheritableSkills(currentFilter, this);
-                    };
-                    BARRACKS.appendChild(heroButton);
-                }
+            const characterMap = new Map();
+            for (let { id, ...rest } of items) {
+                if (!id) continue;
+                if (!characterMap.get(id)) characterMap.set(id, rest);
             }
+            const fixedJSON = [];
+            characterMap.forEach((value, key) => {
+                if (value.name) {
+                    fixedJSON.push({
+                        id: key,
+                        ...value
+                    });
+                }
+            });
+            localStorage.setItem(ROSTER_KEY, JSON.stringify(fixedJSON));
+
+            for (let savedItem of items) {
+                const { heroButton } = createBarracksItem(savedItem);
+                BARRACKS.appendChild(heroButton);
+            }
+        } else {
+            BARRACKS.innerHTML = "";
         }
     }
 
     function handleDeleteHeroEvent(unitId, boundItem) {
         return function deleteFromBarracks(e) {
             e.stopPropagation();
-            const { heroButton } = createHeroItem(unitId);
-            SEARCH_RESULTS.prepend(heroButton);
             BARRACKS.removeChild(boundItem);
-            heroButton.onclick = addToBarracks;
-            saveBarracks();
+            loadSearchSuggestions(page);
+            const newJSON = JSON.parse(localStorage.getItem(ROSTER_KEY)).filter((item) => +item.id !== +unitId);
+            localStorage.setItem(ROSTER_KEY, JSON.stringify(newJSON));
         }
     }
 
@@ -116,43 +122,40 @@
             this.src = newState ? "./static/favorite-on.png" : "./static/favorite-off.png";
             boundItem.dataset.favorite = newState.toString();
             e.stopPropagation();
+            const savedBarracks = JSON.parse(localStorage.getItem(ROSTER_KEY));
+            const currentEntry = savedBarracks.find((i) => +i.id === +boundItem.dataset.unitId);
+            const mappedById = savedBarracks.map((i) => +i.id);
+
             if (newState) {
-                const currentBarracks = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
-                const firstUnfavorite = currentBarracks.find((hero) => !hero.favorite);
+                const firstUnfavorite = savedBarracks.find((hero) => !hero.favorite);
                 if (firstUnfavorite) {
                     const { id } = firstUnfavorite;
+                    const currentEntryIndex = mappedById.indexOf(+currentEntry.id);
+                    savedBarracks.splice(currentEntryIndex, 1);
+                    savedBarracks.unshift(currentEntry);
                     boundItem.parentNode.insertBefore(boundItem, boundItem.parentNode.querySelector(`[data-unit-id="${id}"]`));
+                    currentEntry.favorite = true;
+                    localStorage.setItem(ROSTER_KEY, JSON.stringify(savedBarracks));
                 }
+            } else {
+                currentEntry.favorite = false;
+                const currentEntryIndex = mappedById.indexOf(+currentEntry.id);
+                savedBarracks[currentEntryIndex] = currentEntry;
+                localStorage.setItem(ROSTER_KEY, JSON.stringify(savedBarracks));
             }
-            saveBarracks();
             state = newState;
             lastCheckedHero = boundItem;
             document.getElementById("weapon").click();
         }
     }
 
-    function saveBarracks() {
-        const heroes = BARRACKS.getElementsByClassName("hero-container");
-        const mappedIds = Array.prototype.map.call(heroes, (hero) => {
-            return {
-                id: hero.dataset.unitId,
-                favorite: hero.dataset.favorite == "false" ? false : true
-            }
-        });
-        localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(mappedIds));
-    }
-
     function addToBarracks() {
-        // const portraitImg = this.getElementsByClassName("portrait")[0];
-        // const newButtons = createHeroItem(this.dataset.unitId, true, portraitImg.alt);
-        const deleteIcon = createDeleteIcon();
-        const favoriteIcon = createFavoritesIcon(false);
-        favoriteIcon.onclick = handleFavoriteHeroEvent(newButtons.heroButton, false);
-        deleteIcon.onclick = handleDeleteHeroEvent(this.dataset.unitId, newButtons.heroButton);
-        newButtons.iconsContainer.appendChild(deleteIcon);
-        newButtons.iconsContainer.appendChild(favoriteIcon);
+        const newButtons = createBarracksItem({
+            id: this.dataset.unitId,
+            name: this.dataset.heroName,
+            favorite: false,
+        });
         BARRACKS.appendChild(newButtons.heroButton);
-        newButtons.heroButton.dataset.favorite = false;
         newButtons.heroButton.onclick = function() {
             lastCheckedHero = this;
             if (!currentFilter) {
@@ -161,48 +164,50 @@
             }
             checkInheritableSkills(currentFilter, this);
         };
-        saveBarracks();
+        const savedJSON = JSON.parse(localStorage.getItem(ROSTER_KEY));
+        savedJSON.push({
+            id: this.dataset.unitId,
+            name: this.dataset.heroName,
+            favorite: false
+        });
+        localStorage.setItem(ROSTER_KEY, JSON.stringify(savedJSON));
         SEARCH_RESULTS.removeChild(this);
     }
 
     function loadSearchSuggestions(pageIndex, append) {
-        const items = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
+        const items = JSON.parse(localStorage.getItem(ROSTER_KEY) ?? "[]");
         const params = new URLSearchParams();
-        for (let { id } of items) {
-            params.append("ids", id);
-        }
+        const hexIds = items.map(({ id }) => (+id).toString(16)).join(",");
+        if (hexIds.length) params.append("ids", hexIds);
         if (searchQuery.trim().length) {
             params.append("query", searchQuery);
         }
         params.append("page", pageIndex);
 
-        const abortController = new AbortController();
-
-        return fetch(`${API_URL}/heroes?${params.toString()}`, {
-            signal: abortController.signal
-        }).catch(() => {}).then((response) => response.json()).then((elements) => {
+        return sendRequest(`/heroes?${params.toString()}`).then((elements) => {
             if (!append) {
                 SEARCH_RESULTS.innerHTML = "";
             }
 
             for (let elem of elements) {
-                const { wpn, mvt, id, name} = elem;
+                const [id, mvt, wpn, name] = elem.split("-");
+                console.log(elem.split("-"));
                 const { heroButton, iconsContainer } = createHeroItem(id, true, name);
-                // const weaponTypeImage = document.createElement("img");
-                // const stringWeaponType = WEAPON_TYPES[wpn].replace(/ /g, "_");
-                // weaponTypeImage.loading = "lazy";
-                // weaponTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Class_${stringWeaponType}.png`;
-                // weaponTypeImage.alt = stringWeaponType;
-                // weaponTypeImage.classList.add("top-left");
+                const weaponTypeImage = document.createElement("img");
+                const stringWeaponType = WEAPON_TYPES[wpn].replace(/ /g, "_");
+                weaponTypeImage.loading = "lazy";
+                weaponTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Class_${stringWeaponType}.png`;
+                weaponTypeImage.alt = stringWeaponType;
+                weaponTypeImage.classList.add("top-left");
 
-                // const movementTypeImage = document.createElement("img");
-                // movementTypeImage.loading = "lazy";
-                // const stringMovementType = MOVEMENT_TYPES[mvt];
-                // movementTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Move_${stringMovementType}.png`;
-                // movementTypeImage.classList.add("top-right");
+                const movementTypeImage = document.createElement("img");
+                movementTypeImage.loading = "lazy";
+                const stringMovementType = MOVEMENT_TYPES[mvt];
+                movementTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Move_${stringMovementType}.png`;
+                movementTypeImage.classList.add("bottom-right");
                 
-                // iconsContainer.appendChild(movementTypeImage);
-                // iconsContainer.appendChild(weaponTypeImage);
+                iconsContainer.appendChild(movementTypeImage);
+                iconsContainer.appendChild(weaponTypeImage);
                 SEARCH_RESULTS.appendChild(heroButton);
                 heroButton.onclick = addToBarracks;
             }
@@ -230,7 +235,7 @@
         const heroButton = document.createElement("button");
         heroButton.classList.add("hero-container");
         const frame = document.createElement("img");
-        frame.alt = alt ?? "";
+        frame.alt = "";
         frame.src = "./static/frame.webp";
         frame.classList.add("hero-frame");
 
@@ -238,8 +243,12 @@
         img.loading = "lazy";
         img.src = `${API_URL}/img?id=${heroId}&imgType=portrait`;
         img.classList.add("portrait");
+        img.alt = alt ?? "";
         heroButton.appendChild(img);
         heroButton.dataset.unitId = heroId;
+        if (alt) {
+            heroButton.dataset.heroName = alt;
+        }
         let iconsContainer = null;
         iconsContainer = document.createElement("div");
         iconsContainer.classList.add("icons-container");
@@ -273,14 +282,12 @@
 
     function checkInheritableSkills(slot, hero) {
         const { unitId } = hero.dataset;
-        const existingIds = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
+        const existingIds = JSON.parse(localStorage.getItem(ROSTER_KEY));
         const withoutFavorites = existingIds.filter(({ favorite }) => !favorite);
         const hexIds = withoutFavorites.map(({ id }) => (+id).toString(16));
 
         document.getElementById("inheritables").click();
-        fetch(`${API_URL}/skills?slot=${slot}&searchedId=${unitId}&mode=roster&ids=${hexIds.join(",")}`).then((res) => {
-            return res.json();
-        }).then((skillList) => {
+        sendRequest(`/skills?slot=${slot}&searchedId=${unitId}&ids=${hexIds.join(",")}`).then((skillList) => {
             SKILL_DONORS_LIST.innerHTML = "";
             const UPGRADE_HEADING = document.getElementById("upgrade-heading");
             SKILL_FILTERS.classList.remove("hide");
@@ -317,7 +324,7 @@
                 skillIcon.loading = "lazy";
 
                 if (!["weapon", "assist", "special"].includes(slot)) {
-                    skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Filepath/${skillData.icon}.png`;
+                    skillIcon.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/${skillData.icon}.png`;
                 } else {
                     skillIcon.src = `./static/${slot}-icon.png`;
                 }
@@ -360,7 +367,7 @@
                     return typeof entry !== "object" || !entry.id || !("favorite" in entry);
                 });
                 if (corruptedObject) {
-                    throw new Error();   
+                    throw new Error();
                 }
 
                 BARRACKS.innerHTML = "";
@@ -378,7 +385,9 @@
                     BARRACKS.appendChild(entry.heroButton);
                 }
 
-                saveBarracks();
+                localStorage.setItem(ROSTER_KEY, JSON.stringify(loadedData));
+
+                updateBarracks();
                 loadSearchSuggestions(0);
 
             } catch (e) {
@@ -389,7 +398,8 @@
     }
 
     function exportRoster() {
-        const stringified = JSON.stringify(JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY)));
+        const parsedJSON = JSON.parse(localStorage.getItem(ROSTER_KEY));
+        const stringified = JSON.stringify(parsedJSON);
         const link = document.createElement("a");
         link.style.display = "none";
         document.body.appendChild(link);
@@ -408,4 +418,80 @@
     
     window.addEventListener('load', adjustHeight);
     window.addEventListener('resize', adjustHeight);
+
+    function updateBarracks() {
+        const toUpdate = JSON.parse(localStorage.getItem(ROSTER_KEY)).filter((item) => !item.name);
+        if (toUpdate.length) {
+            const barracks = convertToHex(toUpdate, ({ id }) => id);
+            sendRequest(`/names?ids=${barracks.join(",")}`).then((heroes) => {
+                for (let i = 0; i < heroes.length; i++) {
+                    toUpdate[i].name = heroes[i];
+                }
+
+                localStorage.setItem(ROSTER_KEY, JSON.stringify(toUpdate));
+            });
+        }
+    }
+
+    async function sendRequest(path) {
+        const abortController = new AbortController();
+        
+        return fetch(`${API_URL}${path}`, {
+            signal: abortController.signal
+        }).catch(() => {}).then((resp) => resp.json());
+    }
+
+    function convertToHex(idsArray, valueExtractor) {
+        return idsArray.map(valueExtractor).map((item) => (+item).toString(16));
+    }
+
+    function clearRoster() {
+        localStorage.clear();
+        loadBarracks();
+        loadSearchSuggestions(0);
+    }
+
+    function searchInsideBarracks(e) {
+        const query = e.target.value.toLowerCase();
+        if (query === "") {
+            Array.from(BARRACKS.children).forEach((child) => child.classList.remove("hide"));
+        } else if (query.length >= 2) {
+            const heroes = JSON.parse(localStorage.getItem(ROSTER_KEY) ?? "[]");
+
+            for (let i = 0; i < heroes.length; i++) {
+                const item = heroes[i];
+                const id = item.id;
+                const element = item.name.toLowerCase();
+                if (element.startsWith(query)) {
+                    BARRACKS.querySelector(`[data-unit-id="${id}"]`).classList.remove("hide");
+                } else {
+                    BARRACKS.querySelector(`[data-unit-id="${id}"]`).classList.add("hide");
+                }
+            }
+        }
+    }
+
+    function createBarracksItem(barracksEntry) {
+        const item = createHeroItem(barracksEntry.id, true, barracksEntry.name);
+        const favoriteIcon = createFavoritesIcon(barracksEntry.favorite);
+        const deleteIcon = createDeleteIcon();
+        item.heroButton.dataset.favorite = barracksEntry.favorite;
+        item.heroButton.dataset.unitId = barracksEntry.id;
+        item.heroButton.dataset.heroName = barracksEntry.name;
+        item.heroButton.onclick = function(){
+            lastCheckedHero = this;
+            if (!currentFilter) {
+                currentFilter = "weapon";
+                document.getElementById(currentFilter).checked = true;
+            }
+            checkInheritableSkills(currentFilter, this);
+        };
+        favoriteIcon.onclick = handleFavoriteHeroEvent(item.heroButton, barracksEntry.favorite);
+        deleteIcon.onclick = handleDeleteHeroEvent(item.heroButton.dataset.unitId, item.heroButton);
+
+        item.iconsContainer.appendChild(favoriteIcon);
+        item.iconsContainer.appendChild(deleteIcon);
+
+        return item;
+    }
 })();

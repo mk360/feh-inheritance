@@ -21,11 +21,6 @@ var COLORS [4]string = [4]string{"Red", "Blue", "Green", "Colorless"}
 
 var VARIED_COLORS_WEAPONS [5]string = [5]string{"Bow", "Tome", "Breath", "Beast", "Dagger"}
 
-type UnitWithId struct {
-	Units  []string `json:"units"`
-	IntIDs []int    `json:"ids"`
-}
-
 func corsMiddleware(next http.Handler) http.Handler {
 	var corsMiddleware = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Add("Access-Control-Allow-Origin", "*")
@@ -45,14 +40,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if len(req.Form["mode"]) == 0 ||
-		(req.Form["mode"][0] != "roster") {
-		response.WriteHeader(400)
-		response.Write([]byte("You should specify a search mode (\"roster\")\n"))
-		return
-	}
-
-	if req.Form["mode"][0] == "roster" && len(req.Form["ids"]) == 0 {
+	if len(req.Form["ids"]) == 0 {
 		response.WriteHeader(400)
 		response.Write([]byte("You should send an \"intIDs\" array when searching inside the roster\n"))
 		return
@@ -98,6 +86,15 @@ func convertImageType(imgType string) string {
 	}
 
 	return ""
+}
+
+func findNames(response http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	fmt.Println(request.Form["ids"])
+	var responseIds = queries.GetBarracksHeroes(strings.Split(request.Form["ids"][0], ","))
+	byteResponse, _ := json.Marshal(responseIds)
+
+	response.Write(byteResponse)
 }
 
 func getHeroUrl(response http.ResponseWriter, request *http.Request) {
@@ -163,10 +160,13 @@ func main() {
 
 	mux := http.NewServeMux()
 	var inheritableSkills = http.HandlerFunc(getInheritableSkills)
-	var heroesSearch = http.HandlerFunc(searchHeroes)
-	var heroImgSearch = http.HandlerFunc(getHeroUrl)
+	var heroesRoute = http.HandlerFunc(searchHeroes)
+	var imgRoute = http.HandlerFunc(getHeroUrl)
+	var namesRoute = http.HandlerFunc(findNames)
 	mux.Handle("/skills", corsMiddleware(inheritableSkills))
-	mux.Handle("/heroes", corsMiddleware(heroesSearch))
-	mux.Handle("/img", corsMiddleware(heroImgSearch))
+	mux.Handle("/heroes", corsMiddleware(heroesRoute))
+	mux.Handle("/names", corsMiddleware(namesRoute))
+	mux.Handle("/img", corsMiddleware(imgRoute))
+
 	http.ListenAndServe("localhost:3333", mux)
 }
