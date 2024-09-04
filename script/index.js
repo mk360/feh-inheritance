@@ -191,7 +191,6 @@
 
             for (let elem of elements) {
                 const [id, mvt, wpn, name] = elem.split("-");
-                console.log(elem.split("-"));
                 const { heroButton, iconsContainer } = createHeroItem(id, true, name);
                 const weaponTypeImage = document.createElement("img");
                 const stringWeaponType = WEAPON_TYPES[wpn].replace(/ /g, "_");
