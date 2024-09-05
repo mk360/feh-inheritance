@@ -90,7 +90,6 @@ func convertImageType(imgType string) string {
 
 func findNames(response http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
-	fmt.Println(request.Form["ids"])
 	var responseIds = queries.GetBarracksHeroes(strings.Split(request.Form["ids"][0], ","))
 	byteResponse, _ := json.Marshal(responseIds)
 
