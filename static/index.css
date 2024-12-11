@@ -24,7 +24,7 @@ html {
     background-repeat: no-repeat;
     background-size: cover;
     overflow-x: hidden;
-    height: calc(var(--vh, 1vh) * 100);
+    height: calc(var(--vh, 1vh) * 110);
 }
 
 .frame {
@@ -82,8 +82,8 @@ nav {
 }
 
 body {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -96,8 +96,9 @@ header {
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
 
-    span {
+    h1 {
         grid-area: 1 / 2 / 1 / 2;
+        font-size: clamp(1rem, 10vw, 2rem);
     }
 
     & .socials {
@@ -382,7 +383,7 @@ main {
     nav {
         
         li {
-            font-size: 3cqw;
+            font-size: 5vw;
             flex: 1;
             text-align: center;
         }
@@ -434,12 +435,13 @@ main {
     justify-content: center;
     align-items: center;
     padding: 2rem 1rem;
-    font-size: clamp(1rem, 3vw, 1.5rem);
+    font-size: clamp(1rem, 7vw, 1.5rem);
     font-weight: 600;
     margin-bottom: 1rem;
     color: var(--feh-gold);
     background-color: var(--navy-blue);
     border-radius: 10px;
+    text-align: center;
 
     .character-selected {
         flex-direction: column;
@@ -542,4 +544,17 @@ a:visited {
 
 .hide {
     display: none;
+}
+
+@media screen and (max-width: 500px) {
+    header .socials {
+        flex-direction: column;
+        justify-content: start;
+        align-items: flex-end;
+        gap: 0;
+    }
+
+    .text-input, .donor-banner {
+        font-size: 1.5rem;
+    }
 }
