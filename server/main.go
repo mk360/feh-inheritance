@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"inheritance/array"
+	"inheritance/client"
 	"inheritance/common"
 	"inheritance/queries"
 	"inheritance/structs"
@@ -13,6 +14,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	dotenv "github.com/joho/godotenv"
 )
 
 var skillsArr = []string{"A", "B", "C", "weapon", "assist", "special"}
@@ -51,7 +54,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, weapon, assist or special\n"))
 	}
 
-	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0])
+	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0], "fr")
 
 	response.Write(skills)
 }
@@ -138,6 +141,8 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+	dotenv.Load("./.env")
+	client.Login()
 	common.MOVEMENT_TYPES["Infantry"] = 0
 	common.MOVEMENT_TYPES["Armored"] = 1
 	common.MOVEMENT_TYPES["Flying"] = 2

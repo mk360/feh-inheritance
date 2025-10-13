@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"slices"
 	"strconv"
@@ -42,7 +43,7 @@ func convertToDecimal(hexArray []string) []string {
 	return arr
 }
 
-func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []byte {
+func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, lang string) []byte {
 	var query = url.Values{}
 	query.Set("action", "cargoquery")
 	query.Set("format", "json")
@@ -80,6 +81,8 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) []
 		query.Set("limit", "500")
 		query.Set("where", strings.Join(conditions, " and "))
 		query.Del("group_by")
+
+		fmt.Println(query)
 
 		var offset int = 0
 
@@ -172,6 +175,8 @@ func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []strin
 	query.Add("limit", strconv.Itoa(pageSize))
 	query.Add("fields", "IntID, WeaponType, MoveType, _pageName=Page")
 	query.Add("order_by", "ReleaseDate DESC")
+	query.Add("username", os.Getenv("FEH_USERNAME"))
+	query.Add("password", os.Getenv("FEH_PASSWORD"))
 	query.Add("offset", strconv.Itoa(page*pageSize))
 
 	var where []string = []string{}
