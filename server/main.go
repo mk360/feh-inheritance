@@ -26,7 +26,6 @@ var VARIED_COLORS_WEAPONS [5]string = [5]string{"Bow", "Tome", "Breath", "Beast"
 
 func corsMiddleware(next http.Handler) http.Handler {
 	var corsMiddleware = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		client.Login()
 		writer.Header().Add("Access-Control-Allow-Origin", "*")
 		writer.Header().Add("Access-Control-Allow-Methods", "GET")
 		next.ServeHTTP(writer, request)
@@ -146,6 +145,7 @@ func main() {
 	common.WEAPON_TYPES["Green Axe"] = 2
 	common.WEAPON_TYPES["Colorless Staff"] = 3
 
+	client.Login()
 	var weaponIndex int = 4
 
 	for _, color := range COLORS {
