@@ -10,7 +10,6 @@ import (
 	"inheritance/queries"
 	"inheritance/structs"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -27,6 +26,7 @@ var VARIED_COLORS_WEAPONS [5]string = [5]string{"Bow", "Tome", "Breath", "Beast"
 
 func corsMiddleware(next http.Handler) http.Handler {
 	var corsMiddleware = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		client.Login()
 		writer.Header().Add("Access-Control-Allow-Origin", "*")
 		writer.Header().Add("Access-Control-Allow-Methods", "GET")
 		next.ServeHTTP(writer, request)
@@ -37,7 +37,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
-
 	if len(req.Form["searchedId"]) == 0 {
 		response.WriteHeader(400)
 		response.Write([]byte("You should specify the IntID of the unit you're inheriting for (\"searchedId\")\n"))
@@ -157,19 +156,14 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	var loginError = client.Login()
-	if loginError != nil {
-		log.Fatalln(loginError)
-	} else {
-		var inheritableSkills = http.HandlerFunc(getInheritableSkills)
-		var heroesRoute = http.HandlerFunc(searchHeroes)
-		var imgRoute = http.HandlerFunc(getHeroUrl)
-		var namesRoute = http.HandlerFunc(findNames)
-		mux.Handle("/skills", corsMiddleware(inheritableSkills))
-		mux.Handle("/heroes", corsMiddleware(heroesRoute))
-		mux.Handle("/names", corsMiddleware(namesRoute))
-		mux.Handle("/img", corsMiddleware(imgRoute))
-		http.ListenAndServe("localhost:3333", mux)
-	}
+	var inheritableSkills = http.HandlerFunc(getInheritableSkills)
+	var heroesRoute = http.HandlerFunc(searchHeroes)
+	var imgRoute = http.HandlerFunc(getHeroUrl)
+	var namesRoute = http.HandlerFunc(findNames)
+	mux.Handle("/skills", corsMiddleware(inheritableSkills))
+	mux.Handle("/heroes", corsMiddleware(heroesRoute))
+	mux.Handle("/names", corsMiddleware(namesRoute))
+	mux.Handle("/img", corsMiddleware(imgRoute))
+	http.ListenAndServe("localhost:3333", mux)
 
 }
