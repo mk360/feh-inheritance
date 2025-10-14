@@ -10,6 +10,7 @@ import (
 	"inheritance/queries"
 	"inheritance/structs"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -108,25 +109,19 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 
 	var imgType = request.Form.Get("imgType")
 
-	var query = url.Values{}
-	query.Add("action", "cargoquery")
-	query.Add("format", "json")
-	query.Add("tables", "Units")
-	query.Add("fields", "Units.WikiName=Page")
-	query.Add("where", "Properties holds not \"enemy\" and IntID = "+request.Form.Get("id"))
-
-	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
-
-	if e != nil {
-		response.Write([]byte(""))
-		return
+	query := map[string]string{
+		"action": "cargoquery",
+		"format": "json",
+		"tables": "Units",
+		"fields": "Units.WikiName=Page",
+		"where":  "Properties holds not \"enemy\" and IntID = " + request.Form.Get("id"),
 	}
 
-	defer resp.Body.Close()
-
-	data, _ := io.ReadAll(resp.Body)
+	resp, _ := client.BotClient.Get(query)
+	var marshaled, _ = resp.Value.Marshal()
 	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
-	json.Unmarshal(data, &unmarshaled)
+	json.Unmarshal(marshaled, &unmarshaled)
+
 	if len(unmarshaled.CargoQuery) == 0 {
 		fmt.Println("Searched for a missing id, " + request.Form.Get("id"))
 		response.WriteHeader(404)
@@ -142,7 +137,6 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 
 func main() {
 	dotenv.Load("./.env")
-	client.Login()
 	common.MOVEMENT_TYPES["Infantry"] = 0
 	common.MOVEMENT_TYPES["Armored"] = 1
 	common.MOVEMENT_TYPES["Flying"] = 2
@@ -163,14 +157,19 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	var inheritableSkills = http.HandlerFunc(getInheritableSkills)
-	var heroesRoute = http.HandlerFunc(searchHeroes)
-	var imgRoute = http.HandlerFunc(getHeroUrl)
-	var namesRoute = http.HandlerFunc(findNames)
-	mux.Handle("/skills", corsMiddleware(inheritableSkills))
-	mux.Handle("/heroes", corsMiddleware(heroesRoute))
-	mux.Handle("/names", corsMiddleware(namesRoute))
-	mux.Handle("/img", corsMiddleware(imgRoute))
+	var loginError = client.Login()
+	if loginError != nil {
+		log.Fatalln(loginError)
+	} else {
+		var inheritableSkills = http.HandlerFunc(getInheritableSkills)
+		var heroesRoute = http.HandlerFunc(searchHeroes)
+		var imgRoute = http.HandlerFunc(getHeroUrl)
+		var namesRoute = http.HandlerFunc(findNames)
+		mux.Handle("/skills", corsMiddleware(inheritableSkills))
+		mux.Handle("/heroes", corsMiddleware(heroesRoute))
+		mux.Handle("/names", corsMiddleware(namesRoute))
+		mux.Handle("/img", corsMiddleware(imgRoute))
+		http.ListenAndServe("localhost:3333", mux)
+	}
 
-	http.ListenAndServe("localhost:3333", mux)
 }

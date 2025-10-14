@@ -2,15 +2,11 @@ package queries
 
 import (
 	"encoding/json"
-	"fmt"
 	"inheritance/array"
+	"inheritance/client"
 	"inheritance/common"
 	"inheritance/structs"
-	"io"
 	"log"
-	"net/http"
-	"net/url"
-	"os"
 	"regexp"
 	"slices"
 	"strconv"
@@ -44,25 +40,25 @@ func convertToDecimal(hexArray []string) []string {
 }
 
 func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, lang string) []byte {
-	var query = url.Values{}
-	query.Set("action", "cargoquery")
-	query.Set("format", "json")
-	query.Set("tables", "Units")
-	query.Set("where", "Properties holds not \"enemy\" and IntID = "+searchedIntID)
-	query.Set("fields", "MoveType, WeaponType, Units._pageName=Unit")
-	query.Set("group_by", "Unit")
+	var query = map[string]string{
+		"action":   "cargoquery",
+		"format":   "json",
+		"tables":   "Units",
+		"where":    "Properties holds not \"enemy\" and IntID = " + searchedIntID,
+		"fields":   "MoveType, WeaponType, Units._pageName=Unit",
+		"group_by": "Unit",
+	}
 
-	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+	resp, e := client.BotClient.Get(query)
 
 	if e != nil {
 		log.Fatalln(e)
 	}
 
-	defer resp.Body.Close()
-
 	var singleUnitData structs.SingleUnitWikiResponse = structs.SingleUnitWikiResponse{}
-	singleUnitBytes, _ := io.ReadAll(resp.Body)
-	json.Unmarshal(singleUnitBytes, &singleUnitData)
+	var marshaled, _ = resp.Value.Marshal()
+	json.Unmarshal(marshaled, &singleUnitData)
+
 	var arrayIntIds = convertToDecimal(strings.Split(intIDs[0], ","))
 
 	var moveType = singleUnitData.CargoQuery[0].Title.MoveType
@@ -74,15 +70,13 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 	conditions = append(conditions, "IntID in ("+strings.Join(withoutSelf, ",")+")")
 
 	if len(singleUnitData.CargoQuery) > 0 {
-		query.Set("tables", "Units, UnitSkills, Skills")
-		query.Set("fields", "Skills.Name, Skills.Icon, Units._pageName=Unit, IntID, Required")
-		query.Set("join_on", "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName")
-		query.Set("order_by", "Skills.Name ASC, Unit ASC")
-		query.Set("limit", "500")
-		query.Set("where", strings.Join(conditions, " and "))
-		query.Del("group_by")
-
-		fmt.Println(query)
+		query["tables"] = "Units, UnitSkills, Skills"
+		query["fields"] = "Skills.Name, Skills.Icon, Units._pageName=Unit, IntID, Required"
+		query["join_on"] = "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName"
+		query["order_by"] = "Skills.Name ASC, Unit ASC"
+		query["limit"] = "500"
+		query["where"] = strings.Join(conditions, " and ")
+		delete(query, "group_by")
 
 		var offset int = 0
 
@@ -93,16 +87,14 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 		}
 
 		for {
-			query.Set("offset", strconv.Itoa(offset))
-			resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
+			query["offset"] = strconv.Itoa(offset)
+			resp, e := client.BotClient.Get(query)
 
 			if e != nil {
 				log.Fatalln(e)
 			}
 
-			defer resp.Body.Close()
-
-			data, _ := io.ReadAll(resp.Body)
+			data, _ := resp.Value.Marshal()
 
 			var skillResponse structs.SearchSkillsWikiResponse = structs.SearchSkillsWikiResponse{}
 			json.Unmarshal(data, &skillResponse)
@@ -153,7 +145,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 
 			if len(skillResponse.CargoQuery) == 500 {
 				offset += 500
-				query.Set("offset", strconv.Itoa(offset))
+				query["offset"] = strconv.Itoa(offset)
 			} else {
 				break
 			}
@@ -168,17 +160,6 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 }
 
 func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []string {
-	var query = url.Values{}
-	query.Add("action", "cargoquery")
-	query.Add("format", "json")
-	query.Add("tables", "Units")
-	query.Add("limit", strconv.Itoa(pageSize))
-	query.Add("fields", "IntID, WeaponType, MoveType, _pageName=Page")
-	query.Add("order_by", "ReleaseDate DESC")
-	query.Add("username", os.Getenv("FEH_USERNAME"))
-	query.Add("password", os.Getenv("FEH_PASSWORD"))
-	query.Add("offset", strconv.Itoa(page*pageSize))
-
 	var where []string = []string{}
 
 	if len(ids) > 0 {
@@ -190,25 +171,23 @@ func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []strin
 		where = append(where, "(lower(Units._pageName) like \""+searchQuery+"%\" or lower(WikiName) like \""+searchQuery+"%\")")
 	}
 
-	query.Add("where", strings.Join(where, " and "))
-
-	resp, e := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
-
-	if e != nil {
-		fmt.Println("error with query")
-		fmt.Println(query)
-		var empty []string = []string{}
-
-		return empty
+	var query = map[string]string{
+		"action":   "cargoquery",
+		"format":   "json",
+		"tables":   "Units",
+		"limit":    "500",
+		"offset":   strconv.Itoa(page * pageSize),
+		"where":    strings.Join(where, " and "),
+		"fields":   "IntID, WeaponType, MoveType, _pageName=Page",
+		"order_by": "ReleaseDate DESC",
 	}
 
-	defer resp.Body.Close()
+	var r, _ = client.BotClient.Get(query)
 
-	data, _ := io.ReadAll(resp.Body)
-	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
-	json.Unmarshal(data, &unmarshaled)
-
-	searchResponse := make([]string, len(unmarshaled.CargoQuery))
+	var marshaled, _ = r.Value.Marshal()
+	var unmarshaled = structs.SearchUnitsWikiResponse{}
+	json.Unmarshal(marshaled, &unmarshaled)
+	var searchResponse = make([]string, len(unmarshaled.CargoQuery))
 
 	for i, entry := range unmarshaled.CargoQuery {
 		var movementTypeString = strconv.Itoa(common.MOVEMENT_TYPES[entry.Title.MovementType])
@@ -223,23 +202,22 @@ func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []strin
 
 func GetBarracksHeroes(ids []string) []string {
 	var dec = convertToDecimal(ids)
-	var query = url.Values{}
-	query.Add("action", "cargoquery")
-	query.Add("format", "json")
-	query.Add("tables", "Units")
-	query.Add("fields", "_pageName=Page, IntID")
-	query.Add("limit", "500")
-	query.Add("where", "Properties holds not \"story\" and Properties holds not \"enemy\" and IntID in ("+strings.Join(dec, ",")+")")
+	var query = map[string]string{
+		"action": "cargoquery",
+		"format": "json",
+		"tables": "Units",
+		"fields": "_pageName=Page, IntID",
+		"limit":  "500",
+		"where":  "Properties holds not \"story\" and Properties holds not \"enemy\" and IntID in (" + strings.Join(dec, ",") + ")",
+	}
 	var offset int = 0
 
 	var arr []string = make([]string, len(ids))
 	for {
-		query.Set("offset", strconv.Itoa(offset))
-		resp, _ := http.Get("https://feheroes.fandom.com/api.php?" + query.Encode())
-		defer resp.Body.Close()
-
+		query["offset"] = strconv.Itoa(offset)
+		resp, _ := client.BotClient.Get(query)
+		var data, _ = resp.Marshal()
 		var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
-		data, _ := io.ReadAll(resp.Body)
 		json.Unmarshal(data, &unmarshaled)
 
 		for _, hero := range unmarshaled.CargoQuery {
