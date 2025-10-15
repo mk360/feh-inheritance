@@ -39,7 +39,7 @@ func convertToDecimal(hexArray []string) []string {
 	return arr
 }
 
-func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, lang string) []byte {
+func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, lang string) structs.SearchSkillsResponse {
 	var query = map[string]string{
 		"action":   "cargoquery",
 		"format":   "json",
@@ -55,7 +55,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 		log.Fatalln(e)
 	}
 
-	var singleUnitData structs.SingleUnitWikiResponse = structs.SingleUnitWikiResponse{}
+	var singleUnitData = structs.SingleUnitWikiResponse{}
 	var marshaled, _ = resp.Value.Marshal()
 	json.Unmarshal(marshaled, &singleUnitData)
 
@@ -63,11 +63,15 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 
 	var moveType = singleUnitData.CargoQuery[0].Title.MoveType
 	var weaponType = singleUnitData.CargoQuery[0].Title.WeaponType
-
-	var conditions []string = []string{"Next is null", "Units.Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Units.Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\""}
-
 	var withoutSelf = array.FilterOut(arrayIntIds, searchedIntID)
-	conditions = append(conditions, "IntID in ("+strings.Join(withoutSelf, ",")+")")
+
+	var conditions = []string{"Next is null", "Units.Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Units.Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\"", "IntID in (" + strings.Join(withoutSelf, ",") + ")"}
+
+	var parsedResponse = structs.SearchSkillsResponse{
+		Skills:   map[string]structs.SkillInfos{},
+		Units:    map[int]string{},
+		Searched: singleUnitData.CargoQuery[0].Title.Unit,
+	}
 
 	if len(singleUnitData.CargoQuery) > 0 {
 		query["tables"] = "Units, UnitSkills, Skills"
@@ -79,12 +83,6 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 		delete(query, "group_by")
 
 		var offset int = 0
-
-		var parsedResponse structs.SearchSkillsResponse = structs.SearchSkillsResponse{
-			Skills:   map[string]structs.SkillInfos{},
-			Units:    map[int]string{},
-			Searched: singleUnitData.CargoQuery[0].Title.Unit,
-		}
 
 		for {
 			query["offset"] = strconv.Itoa(offset)
@@ -151,12 +149,10 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, la
 			}
 		}
 
-		stringified, _ := json.Marshal(parsedResponse)
-
-		return stringified
+		return parsedResponse
 	}
 
-	return []byte("")
+	return parsedResponse
 }
 
 func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []string {

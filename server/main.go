@@ -55,7 +55,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 
 	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0], "fr")
 
-	response.Write(skills)
+	json.NewEncoder(response).Encode(skills)
 }
 
 func searchHeroes(response http.ResponseWriter, request *http.Request) {
