@@ -12,7 +12,7 @@
     const EXPORT_BUTTON = document.getElementById("export");
     const IMPORT_BUTTON = document.getElementById("import");
     const CLEAR_BUTTON = document.getElementById("clear");
-    
+
     const API_URL = "https://api.feh-inheritance.tonion-the-onion.com";
     let lastCheckedHero;
 
@@ -29,14 +29,14 @@
     BARRACKS_SEARCH.onkeyup = searchInsideBarracks;
 
     Array.from(document.getElementsByClassName("filter-input")).forEach((input) => {
-        input.onclick = function() {
+        input.onclick = function () {
             currentFilter = this.id;
             checkInheritableSkills(currentFilter, lastCheckedHero);
-        }
+        };
     });
 
     for (let tab of TABS) {
-        tab.onchange = function() {
+        tab.onchange = function () {
             const { id } = this;
             const tabsContainers = document.querySelectorAll(".tab-content");
             for (let container of tabsContainers) {
@@ -51,16 +51,16 @@
             } else {
                 HERO_SEARCH.parentNode.classList.remove("hide");
             }
-        }
+        };
     }
-    
+
     HERO_SEARCH.onkeyup = (e) => {
         searchQuery = e.target.value;
         if (searchQuery.length > 2 || !searchQuery.length) {
             page = 0;
             loadSearchSuggestions(0);
         }
-    }
+    };
 
     for (let color of ["Red", "Blue", "Green", "Colorless"]) {
         for (let weapon of ["Bow", "Tome", "Breath", "Beast", "Dagger"]) {
@@ -76,6 +76,8 @@
     }
 
     loadSearchSuggestions(page);
+
+    refreshBarracksCount();
 
     function loadBarracks() {
         const items = JSON.parse(localStorage.getItem(ROSTER_KEY) ?? "[]");
@@ -103,6 +105,7 @@
         } else {
             BARRACKS.innerHTML = "";
         }
+        refreshBarracksCount();
     }
 
     function handleDeleteHeroEvent(unitId, boundItem) {
@@ -112,7 +115,9 @@
             loadSearchSuggestions(page);
             const newJSON = JSON.parse(localStorage.getItem(ROSTER_KEY)).filter((item) => +item.id !== +unitId);
             localStorage.setItem(ROSTER_KEY, JSON.stringify(newJSON));
-        }
+
+            refreshBarracksCount();
+        };
     }
 
     function handleFavoriteHeroEvent(boundItem, startingState) {
@@ -146,7 +151,7 @@
             state = newState;
             lastCheckedHero = boundItem;
             document.getElementById("weapon").click();
-        }
+        };
     }
 
     function addToBarracks() {
@@ -156,7 +161,7 @@
             favorite: false,
         });
         BARRACKS.appendChild(newButtons.heroButton);
-        newButtons.heroButton.onclick = function() {
+        newButtons.heroButton.onclick = function () {
             lastCheckedHero = this;
             if (!currentFilter) {
                 currentFilter = "weapon";
@@ -172,6 +177,7 @@
         });
         localStorage.setItem(ROSTER_KEY, JSON.stringify(savedJSON));
         SEARCH_RESULTS.removeChild(this);
+        refreshBarracksCount();
     }
 
     function loadSearchSuggestions(pageIndex, append) {
@@ -204,7 +210,7 @@
                 const stringMovementType = MOVEMENT_TYPES[mvt];
                 movementTypeImage.src = `https://feheroes.fandom.com/wiki/Special:Redirect/file/Icon_Move_${stringMovementType}.png`;
                 movementTypeImage.classList.add("bottom-right");
-                
+
                 iconsContainer.appendChild(movementTypeImage);
                 iconsContainer.appendChild(weaponTypeImage);
                 SEARCH_RESULTS.appendChild(heroButton);
@@ -218,7 +224,7 @@
                 newLoadMore.classList.add("cta");
                 newLoadMore.id = "load-more";
 
-                newLoadMore.onclick = function() {
+                newLoadMore.onclick = function () {
                     page++;
                     loadSearchSuggestions(page, true);
                 };
@@ -290,7 +296,7 @@
             SKILL_DONORS_LIST.innerHTML = "";
             const UPGRADE_HEADING = document.getElementById("upgrade-heading");
             SKILL_FILTERS.classList.remove("hide");
-            UPGRADE_HEADING.innerHTML = `Skills that ${skillList.searched} can inherit`
+            UPGRADE_HEADING.innerHTML = `Skills that ${skillList.searched} can inherit`;
             UPGRADE_HEADING.classList.add("target-banner");
             let targetPortrait = document.getElementById("target-portrait");
 
@@ -355,9 +361,9 @@
     function importRoster() {
         const [file] = this.files;
         const fileReader = new FileReader();
-        fileReader.onerror = function() {
+        fileReader.onerror = function () {
             alert("An error happened, please try again.");
-        }
+        };
         fileReader.onloadend = ({ target }) => {
             const { result } = target;
             try {
@@ -392,7 +398,7 @@
             } catch (e) {
                 alert("There was an error parsing your file. Please try with another one.");
             }
-        }
+        };
         fileReader.readAsText(file);
     }
 
@@ -403,7 +409,7 @@
         link.style.display = "none";
         document.body.appendChild(link);
         link.download = "feh-roster.json";
-        const blob = new Blob([stringified], { type: "text/json"});
+        const blob = new Blob([stringified], { type: "text/json" });
         const url = URL.createObjectURL(blob);
         link.href = url;
         link.click();
@@ -414,7 +420,7 @@
         const vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
-    
+
     window.addEventListener('load', adjustHeight);
     window.addEventListener('resize', adjustHeight);
 
@@ -430,14 +436,16 @@
                 localStorage.setItem(ROSTER_KEY, JSON.stringify(toUpdate));
             });
         }
+
+        refreshBarracksCount();
     }
 
     async function sendRequest(path) {
         const abortController = new AbortController();
-        
+
         return fetch(`${API_URL}${path}`, {
             signal: abortController.signal
-        }).catch(() => {}).then((resp) => resp.json());
+        }).catch(() => { }).then((resp) => resp.json());
     }
 
     function convertToHex(idsArray, valueExtractor) {
@@ -447,6 +455,7 @@
     function clearRoster() {
         localStorage.clear();
         loadBarracks();
+        refreshBarracksCount();
         loadSearchSuggestions(0);
     }
 
@@ -477,7 +486,7 @@
         item.heroButton.dataset.favorite = barracksEntry.favorite;
         item.heroButton.dataset.unitId = barracksEntry.id;
         item.heroButton.dataset.heroName = barracksEntry.name;
-        item.heroButton.onclick = function(){
+        item.heroButton.onclick = function () {
             lastCheckedHero = this;
             if (!currentFilter) {
                 currentFilter = "weapon";
@@ -492,5 +501,11 @@
         item.iconsContainer.appendChild(deleteIcon);
 
         return item;
+    }
+
+    function refreshBarracksCount() {
+        const items = localStorage.getItem(ROSTER_KEY);
+        const rosterLength = items ? Array.from(JSON.parse(items)).length : 0;
+        document.getElementById("roster-count").innerText = `(${rosterLength === 0 ? "no" : rosterLength} unit${rosterLength !== 1 ? "s" : ""})`;
     }
 })();

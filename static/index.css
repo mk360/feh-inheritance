@@ -37,6 +37,7 @@ html {
 
 nav {
     margin-bottom: 1rem;
+
     ul {
         display: flex;
         list-style: none;
@@ -62,13 +63,13 @@ nav {
         input {
             display: none;
 
-            &:checked + label {
+            &:checked+label {
                 color: var(--feh-gold);
                 background: linear-gradient(to top, var(--navy-blue) 3%, transparent);
             }
 
-            &:not(:checked) + label {
-                background: linear-gradient(to top, rgba(0,0,0,0.4) 3%, transparent);
+            &:not(:checked)+label {
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 3%, transparent);
             }
         }
     }
@@ -154,7 +155,8 @@ main {
         width: calc(var(--cell-size) + 10px);
     }
 
-    &:focus, &:hover {
+    &:focus,
+    &:hover {
         .hero-frame {
             filter: brightness(120%);
         }
@@ -202,7 +204,8 @@ main {
     border-radius: 10px;
     border: none;
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         outline: 1px solid var(--navy-blue);
     }
 }
@@ -251,7 +254,7 @@ main {
 .extra {
     display: grid;
     gap: 2vw;
-    margin: 0 auto;
+    margin: 1rem auto;
     grid-template-columns: repeat(auto-fit, var(--cell-size));
     grid-template-rows: repeat(auto-fit, var(--cell-size));
 }
@@ -317,7 +320,8 @@ main {
     background: radial-gradient(var(--delete-dark-red) 30%, var(--delete-red));
     height: 1rem;
 
-    &:focus, &:hover {
+    &:focus,
+    &:hover {
         outline: 1px solid var(--delete-red);
     }
 
@@ -381,7 +385,7 @@ main {
     }
 
     nav {
-        
+
         li {
             font-size: 5vw;
             flex: 1;
@@ -389,17 +393,21 @@ main {
         }
     }
 
-    #barracks, #search-content, .extra {
+    #barracks,
+    #search-content,
+    .extra {
         gap: 4vw;
     }
 
     .skill-filter-label {
         img {
-            height: calc(var(--cell-size ) / 2.5);
+            height: calc(var(--cell-size) / 2.5);
         }
     }
 
-    .top-left, .top-right, .bottom-right {
+    .top-left,
+    .top-right,
+    .bottom-right {
         height: 3rem;
     }
 
@@ -471,13 +479,13 @@ main {
 .filter-input {
     display: none;
 
-    & + label {
+    &+label {
         &:hover {
             filter: brightness(110%);
         }
     }
 
-    &:checked + label {
+    &:checked+label {
         &[for="weapon"] {
             border-bottom: 6px solid #FF5475;
         }
@@ -554,7 +562,8 @@ a:visited {
         gap: 0;
     }
 
-    .text-input, .donor-banner {
+    .text-input,
+    .donor-banner {
         font-size: 1.5rem;
     }
 }
