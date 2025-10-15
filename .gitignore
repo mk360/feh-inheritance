@@ -3,3 +3,5 @@ node_modules
 package.json
 package-lock.json
 .env
+script/index.min.js
+script/index.min.js.map

@@ -49,6 +49,7 @@ nav {
             background-color: #ccc;
             padding: 8px 1rem;
             cursor: pointer;
+            font-size: 1.5rem;
             font-weight: 600;
 
             &[for="search"] {
@@ -121,7 +122,7 @@ main {
     grid-template-rows: 1fr;
     column-gap: clamp(1rem, 10vw, 3rem);
     row-gap: 1rem;
-    max-height: 70vh;
+    max-height: 85vh;
 }
 
 .searchbox {
@@ -213,8 +214,8 @@ main {
 .cta {
     background-color: var(--feh-gold);
     color: var(--navy-blue);
-    padding: 1rem 0.5rem;
-    font-size: 1.5rem;
+    padding: 0.5rem 0.5rem;
+    font-size: 1.3rem;
     font-weight: 600;
     border-radius: 10px;
     cursor: pointer;
@@ -226,8 +227,8 @@ main {
     color: var(--feh-gold);
     background-color: var(--navy-blue);
     padding: 1rem 0.5rem;
-    font-size: 1.5rem;
     font-weight: 600;
+    font-size: 1.3rem;
     border-radius: 10px;
     cursor: pointer;
     box-shadow: var(--shadow);
@@ -256,7 +257,7 @@ main {
     gap: 2vw;
     margin: 1rem auto;
     grid-template-columns: repeat(auto-fit, var(--cell-size));
-    grid-template-rows: repeat(auto-fit, var(--cell-size));
+    grid-template-rows: repeat(auto-fit, 80px);
 }
 
 .top-left {
@@ -349,6 +350,7 @@ main {
     display: flex;
     align-items: center;
     gap: 0.5vw;
+    margin: 1.5rem 0 0.5rem 0;
 }
 
 .skill-subtitle {
@@ -356,6 +358,7 @@ main {
     color: transparent;
     background-clip: text;
     font-size: 3vh;
+    margin: 0;
 }
 
 .donor-banner {
@@ -385,9 +388,8 @@ main {
     }
 
     nav {
-
         li {
-            font-size: 5vw;
+            font-size: 3vw;
             flex: 1;
             text-align: center;
         }
@@ -442,7 +444,7 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem 1rem;
+    padding: 1rem 1rem;
     font-size: clamp(1rem, 7vw, 1.5rem);
     font-weight: 600;
     margin-bottom: 1rem;
@@ -457,7 +459,7 @@ main {
 }
 
 #inheritable-skills {
-    max-height: 70vh;
+    max-height: 85vh;
     padding: 0;
     border: none;
     background-color: transparent;
@@ -508,6 +510,10 @@ main {
 
         &[for="C"] {
             border-bottom: 6px solid #02F351;
+        }
+
+        &[for="X"] {
+            border-bottom: 6px solid #A6FF34;
         }
     }
 }

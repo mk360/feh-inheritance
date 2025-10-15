@@ -23,6 +23,8 @@ func convertSlotName(slot string) string {
 		return "passiveb"
 	case "C":
 		return "passivec"
+	case "X":
+		return "passivex"
 	default:
 		return slot
 	}

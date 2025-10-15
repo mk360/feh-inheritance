@@ -18,7 +18,7 @@ import (
 	dotenv "github.com/joho/godotenv"
 )
 
-var skillsArr = []string{"A", "B", "C", "weapon", "assist", "special"}
+var skillsArr = []string{"A", "B", "C", "X", "weapon", "assist", "special"}
 
 var COLORS [4]string = [4]string{"Red", "Blue", "Green", "Colorless"}
 
@@ -50,7 +50,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 
 	if len(req.Form["slot"]) == 0 || !array.Includes(skillsArr, req.Form["slot"][0]) {
 		response.WriteHeader(400)
-		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, weapon, assist or special\n"))
+		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, X, weapon, assist or special\n"))
 	}
 
 	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0], "fr")
