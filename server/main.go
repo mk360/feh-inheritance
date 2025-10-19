@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -106,31 +107,45 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	}
 
 	var imgType = request.Form.Get("imgType")
-
-	query := map[string]string{
-		"action": "cargoquery",
-		"format": "json",
-		"tables": "Units",
-		"fields": "Units.WikiName=Page",
-		"where":  "Properties holds not \"enemy\" and IntID = " + request.Form.Get("id"),
+	_, err := os.Stat("./cache/" + imgType)
+	if err != nil {
+		os.Mkdir("./cache/"+imgType, 0644)
 	}
 
-	resp, _ := client.BotClient.Get(query)
-	var marshaled, _ = resp.Value.Marshal()
-	var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
-	json.Unmarshal(marshaled, &unmarshaled)
+	var filePath = "./cache/" + imgType + "/" + request.Form.Get("id") + ".webp"
 
-	if len(unmarshaled.CargoQuery) == 0 {
-		fmt.Println("Searched for a missing id, " + request.Form.Get("id"))
-		response.WriteHeader(404)
-		return
+	_, fileErr := os.Stat(filePath)
+	if fileErr != nil {
+
+		query := map[string]string{
+			"action": "cargoquery",
+			"format": "json",
+			"tables": "Units",
+			"fields": "Units.WikiName=Page",
+			"where":  "Properties holds not \"enemy\" and IntID = " + request.Form.Get("id"),
+		}
+
+		resp, _ := client.BotClient.Get(query)
+		var marshaled, _ = resp.Value.Marshal()
+		var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
+		json.Unmarshal(marshaled, &unmarshaled)
+
+		if len(unmarshaled.CargoQuery) == 0 {
+			fmt.Println("Searched for a missing id, " + request.Form.Get("id"))
+			response.WriteHeader(404)
+			return
+		}
+		var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
+		imageCDNLocation, _ := http.Get(url)
+
+		defer imageCDNLocation.Body.Close()
+		imageByteData, _ := io.ReadAll(imageCDNLocation.Body)
+		os.WriteFile(filePath, imageByteData, 0644)
+		response.Write(imageByteData)
+	} else {
+		var openedFile, _ = os.ReadFile(filePath)
+		response.Write(openedFile)
 	}
-	var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
-	imageCDNLocation, _ := http.Get(url)
-
-	defer imageCDNLocation.Body.Close()
-	imageByteData, _ := io.ReadAll(imageCDNLocation.Body)
-	response.Write(imageByteData)
 }
 
 func main() {
