@@ -14,7 +14,7 @@ func Login() {
 	BotClient, _ = mwclient.New("https://feheroes.fandom.com/api.php", "feh-inheritance.tonion-the-onion.com (Discord: N_tonio36)")
 	BotClient.Login(os.Getenv("FEH_USERNAME"), os.Getenv("FEH_PASSWORD"))
 	loginCron := cron.New()
-	loginCron.AddFunc("@every 20m", func() {
+	loginCron.AddFunc("@every 2h", func() {
 		BotClient.Login(os.Getenv("FEH_USERNAME"), os.Getenv("FEH_PASSWORD"))
 		fmt.Println("login initiated")
 	})
