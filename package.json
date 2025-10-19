@@ -1,0 +1,31 @@
+{
+  "name": "feh-inheritance",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk360/feh-inheritance.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mk360/feh-inheritance/issues"
+  },
+  "homepage": "https://github.com/mk360/feh-inheritance#readme",
+  "devDependencies": {
+    "css-minify": "^2.0.0",
+    "esbuild": "^0.23.1",
+    "html-minifier": "^4.0.0",
+    "serve": "^14.2.3",
+    "uglify-js": "^3.19.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "mwn": "^3.0.1"
+  }
+}
