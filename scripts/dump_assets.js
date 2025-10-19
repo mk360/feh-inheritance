@@ -37,11 +37,16 @@ dotenv.config({
 })();
 
 async function getFiles(intID, wikiPage) {
-    const portraitRequest = await fetch(`https://feheroes.fandom.com/Special:Redirect/file/${wikiPage.replace(/ /g, "_")}_Face_FC.webp`);
-    const imageContent = await portraitRequest.arrayBuffer();
-    fs.writeFileSync(`../server/cache/portrait/${intID}.webp`, Buffer.from(imageContent));
+    if (!fs.existsSync(`../server/cache/portrait/${intID}.webp`)) {
+        const portraitRequest = await fetch(`https://feheroes.fandom.com/Special:Redirect/file/${wikiPage.replace(/ /g, "_")}_Face_FC.webp`);
+        const imageContent = await portraitRequest.arrayBuffer();
+        fs.writeFileSync(`../server/cache/portrait/${intID}.webp`, Buffer.from(imageContent));
+    }
 
-    const bannerRequest = await fetch(`https://feheroes.fandom.com/Special:Redirect/file/${wikiPage.replace(/ /g, "_")}_BtlFace_BU.webp`);
-    const bannerResponse = await bannerRequest.arrayBuffer();
-    fs.writeFileSync(`../server/cache/battle/${intID}.webp`, Buffer.from(bannerResponse));
+
+    if (!fs.existsSync(`../server/cache/battle/${intID}.webp`)) {
+        const bannerRequest = await fetch(`https://feheroes.fandom.com/Special:Redirect/file/${wikiPage.replace(/ /g, "_")}_BtlFace_BU.webp`);
+        const bannerResponse = await bannerRequest.arrayBuffer();
+        fs.writeFileSync(`../server/cache/battle/${intID}.webp`, Buffer.from(bannerResponse));
+    }
 }
