@@ -148,6 +148,10 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func healthEndpoint(response http.ResponseWriter, request *http.Request) {
+	response.Write([]byte(""))
+}
+
 func main() {
 	dotenv.Load("./.env")
 	common.MOVEMENT_TYPES["Infantry"] = 0
@@ -175,10 +179,12 @@ func main() {
 	var heroesRoute = http.HandlerFunc(searchHeroes)
 	var imgRoute = http.HandlerFunc(getHeroUrl)
 	var namesRoute = http.HandlerFunc(findNames)
+	var healthRoute = http.HandlerFunc(healthEndpoint)
 	mux.Handle("/skills", corsMiddleware(inheritableSkills))
 	mux.Handle("/heroes", corsMiddleware(heroesRoute))
 	mux.Handle("/names", corsMiddleware(namesRoute))
 	mux.Handle("/img", corsMiddleware(imgRoute))
+	mux.Handle("/health", corsMiddleware(healthRoute))
 	http.ListenAndServe("localhost:3333", mux)
 
 }
