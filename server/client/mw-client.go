@@ -18,7 +18,7 @@ func Login() {
 		log.Fatalln(err)
 	}
 	loginCron := cron.New()
-	loginCron.AddFunc("@every 2h", func() {
+	loginCron.AddFunc("@every 4h", func() {
 		err := BotClient.Login(os.Getenv("FEH_USERNAME"), os.Getenv("FEH_PASSWORD"))
 		if err != nil {
 			log.Fatalln(err)

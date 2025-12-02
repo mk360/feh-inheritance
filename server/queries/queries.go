@@ -41,7 +41,7 @@ func convertToDecimal(hexArray []string) []string {
 	return arr
 }
 
-func GetInheritableSkills(intIDs []string, searchedIntID string, slot string, lang string) structs.SearchSkillsResponse {
+func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) structs.SearchSkillsResponse {
 	var query = map[string]string{
 		"action":   "cargoquery",
 		"format":   "json",

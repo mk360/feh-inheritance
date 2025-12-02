@@ -54,7 +54,7 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 		response.Write([]byte("You should send a \"slot\" specifying either A, B, C, X, weapon, assist or special\n"))
 	}
 
-	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0], "fr")
+	var skills = queries.GetInheritableSkills(req.Form["ids"], req.Form["searchedId"][0], req.Form["slot"][0])
 
 	json.NewEncoder(response).Encode(skills)
 }
@@ -74,9 +74,7 @@ func searchHeroes(response http.ResponseWriter, request *http.Request) {
 
 		var responseIds = queries.GetHeroes(searchQuery, request.Form["ids"], convertedPage, PAGE_SIZE)
 
-		byteResponse, _ := json.Marshal(responseIds)
-
-		response.Write(byteResponse)
+		json.NewEncoder(response).Encode(responseIds)
 	}
 }
 
@@ -186,5 +184,4 @@ func main() {
 	mux.Handle("/img", corsMiddleware(imgRoute))
 	mux.Handle("/health", corsMiddleware(healthRoute))
 	http.ListenAndServe("localhost:3333", mux)
-
 }
