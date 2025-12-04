@@ -133,7 +133,7 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 			response.WriteHeader(404)
 			return
 		}
-		var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.Replace(unmarshaled.CargoQuery[0].Title.Page, " ", "_", -1)) + convertImageType(imgType) + ".webp"
+		var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.ReplaceAll(unmarshaled.CargoQuery[0].Title.Page, " ", "_")) + convertImageType(imgType) + ".webp"
 		imageCDNLocation, _ := http.Get(url)
 
 		defer imageCDNLocation.Body.Close()
