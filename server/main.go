@@ -183,5 +183,6 @@ func main() {
 	mux.Handle("/names", corsMiddleware(namesRoute))
 	mux.Handle("/img", corsMiddleware(imgRoute))
 	mux.Handle("/health", corsMiddleware(healthRoute))
+	fmt.Println("Listening to port 3333")
 	http.ListenAndServe("localhost:3333", mux)
 }

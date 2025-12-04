@@ -6,6 +6,7 @@ type SkillResponseTitle struct {
 	IntID    string `json:"IntID"`
 	Required string `json:"Required"`
 	Icon     string `json:"icon"`
+	SP       string `json:"SP"`
 }
 
 type SearchSkillsWikiResponse struct {
@@ -17,6 +18,7 @@ type SearchSkillsWikiResponse struct {
 type SkillInfos struct {
 	Ids  []int  `json:"ids"`
 	Icon string `json:"icon,omitempty"`
+	SP   int
 }
 
 type SearchSkillsResponse struct {

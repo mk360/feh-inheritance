@@ -77,7 +77,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 
 	if len(singleUnitData.CargoQuery) > 0 {
 		query["tables"] = "Units, UnitSkills, Skills"
-		query["fields"] = "Skills.Name, Skills.Icon, Units._pageName=Unit, IntID, Required"
+		query["fields"] = "Skills.Name, Skills.Icon, Units._pageName=Unit, IntID, Required, SP"
 		query["join_on"] = "UnitSkills._pageName = Units._pageName, UnitSkills.skill = Skills.WikiName"
 		query["order_by"] = "Skills.Name ASC, Unit ASC"
 		query["limit"] = "500"
@@ -101,10 +101,12 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 
 			for _, responseTitle := range skillResponse.CargoQuery {
 				_, ok := parsedResponse.Skills[responseTitle.Title.Name]
+				var intSP, _ = strconv.ParseFloat(responseTitle.Title.SP, 32)
 				if !ok {
 					parsedResponse.Skills[responseTitle.Title.Name] = structs.SkillInfos{
 						Ids:  []int{},
 						Icon: strings.Replace(responseTitle.Title.Icon, ".png", "", 1),
+						SP:   int(intSP * 1.5),
 					}
 				}
 

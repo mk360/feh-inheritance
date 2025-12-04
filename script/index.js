@@ -321,7 +321,7 @@
                 const skillData = skillList.Skills[skill];
                 const skillSubtitle = document.createElement("h3");
                 skillSubtitle.classList.add("skill-subtitle");
-                skillSubtitle.innerHTML = skill;
+                skillSubtitle.innerHTML = `${skill} - ${skillData.SP} SP`;
                 const skillTitleContainer = document.createElement("div");
                 skillTitleContainer.classList.add("skill-title");
                 const skillIcon = document.createElement("img");
