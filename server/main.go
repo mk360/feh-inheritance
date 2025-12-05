@@ -123,7 +123,7 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 			"where":  "Properties holds not \"enemy\" and IntID = " + request.Form.Get("id"),
 		}
 
-		resp, _ := client.BotClient.Get(query)
+		resp, _ := client.RunBotRequest(query)
 		var marshaled, _ = resp.Value.Marshal()
 		var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
 		json.Unmarshal(marshaled, &unmarshaled)

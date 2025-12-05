@@ -51,7 +51,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 		"group_by": "Unit",
 	}
 
-	resp, e := client.BotClient.Get(query)
+	resp, e := client.RunBotRequest(query)
 
 	if e != nil {
 		log.Fatalln(e)
@@ -88,7 +88,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 
 		for {
 			query["offset"] = strconv.Itoa(offset)
-			resp, e := client.BotClient.Get(query)
+			resp, e := client.RunBotRequest(query)
 
 			if e != nil {
 				log.Fatalln(e)
@@ -182,7 +182,7 @@ func GetHeroes(searchQuery string, ids []string, page int, pageSize int) []strin
 		"order_by": "ReleaseDate DESC",
 	}
 
-	var r, _ = client.BotClient.Get(query)
+	var r, _ = client.RunBotRequest(query)
 
 	var marshaled, _ = r.Value.Marshal()
 	var unmarshaled = structs.SearchUnitsWikiResponse{}
@@ -215,7 +215,7 @@ func GetBarracksHeroes(ids []string) []string {
 	var arr []string = make([]string, len(ids))
 	for {
 		query["offset"] = strconv.Itoa(offset)
-		resp, _ := client.BotClient.Get(query)
+		resp, _ := client.RunBotRequest(query)
 		var data, _ = resp.Marshal()
 		var unmarshaled structs.SearchUnitsWikiResponse = structs.SearchUnitsWikiResponse{}
 		json.Unmarshal(data, &unmarshaled)
