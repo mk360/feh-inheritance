@@ -30,11 +30,13 @@ func SetupBots() {
 }
 
 func RunBotRequest(query map[string]string) (*jason.Object, error) {
-	for _, bot := range BotClients {
+	for i, bot := range BotClients {
 		resp, e := bot.Get(query)
 		if e == nil {
 			return resp, e
 		}
+		fmt.Printf("unable to make a request with bot #%d:\n", i+1)
+		fmt.Println(e)
 	}
 	fmt.Println("both bots failed to process the request, trying again")
 	return RunBotRequest(query)
