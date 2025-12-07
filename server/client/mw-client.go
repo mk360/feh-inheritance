@@ -1,31 +1,41 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	mwclient "cgt.name/pkg/go-mwclient"
 	"github.com/antonholmquist/jason"
 )
 
-var BotClient *mwclient.Client
+type BotCredentialPair struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
-func Login() {
-	BotClient, _ = mwclient.New("https://feheroes.fandom.com/api.php", "feh-inheritance.tonion-the-onion.com (Discord: N_tonio36)")
-	err := BotClient.Login(os.Getenv("FEH_USERNAME"), os.Getenv("FEH_PASSWORD"))
-	if err != nil {
-		log.Fatalln(err)
+var BotClients []*mwclient.Client
+
+func SetupBots() {
+	var botCredentials = []BotCredentialPair{}
+	var f, _ = os.Open("bots.json")
+	var credentialsDecoder = json.NewDecoder(f)
+	credentialsDecoder.Decode(&botCredentials)
+	for _, pair := range botCredentials {
+		var client, _ = mwclient.New("https://feheroes.fandom.com/api.php", "feh-inheritance.tonion-the-onion.com (Discord: N_tonio36)")
+		client.Login(pair.Username, pair.Password)
+		BotClients = append(BotClients, client)
 	}
-	fmt.Println("login initiated")
+	fmt.Println("logins initiated")
 }
 
 func RunBotRequest(query map[string]string) (*jason.Object, error) {
-	resp, e := BotClient.Get(query)
-	if e != nil {
-		fmt.Println(e)
-		BotClient.Login(os.Getenv("FEH_USERNAME"), os.Getenv("FEH_PASSWORD"))
-		return RunBotRequest(query)
+	for _, bot := range BotClients {
+		resp, e := bot.Get(query)
+		if e == nil {
+			return resp, e
+		}
 	}
-	return resp, e
+	fmt.Println("both bots failed to process the request, trying again")
+	return RunBotRequest(query)
 }

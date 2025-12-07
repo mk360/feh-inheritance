@@ -1,6 +1,6 @@
 serve.js
 node_modules
-.env
+bots.json
 script/index.min.js
 script/index.min.js.map
 server/cache/*

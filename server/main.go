@@ -15,8 +15,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	dotenv "github.com/joho/godotenv"
 )
 
 var skillsArr = []string{"A", "B", "C", "X", "weapon", "assist", "special"}
@@ -151,7 +149,7 @@ func healthEndpoint(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	dotenv.Load("./.env")
+	client.SetupBots()
 	common.MOVEMENT_TYPES["Infantry"] = 0
 	common.MOVEMENT_TYPES["Armored"] = 1
 	common.MOVEMENT_TYPES["Flying"] = 2
@@ -162,7 +160,6 @@ func main() {
 	common.WEAPON_TYPES["Green Axe"] = 2
 	common.WEAPON_TYPES["Colorless Staff"] = 3
 
-	client.Login()
 	var weaponIndex int = 4
 
 	for _, color := range COLORS {

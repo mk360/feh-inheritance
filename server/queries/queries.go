@@ -2,6 +2,7 @@ package queries
 
 import (
 	"encoding/json"
+	"fmt"
 	"inheritance/array"
 	"inheritance/client"
 	"inheritance/common"
@@ -85,8 +86,10 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 		delete(query, "group_by")
 
 		var offset int = 0
+		var requests = 0
 
 		for {
+			requests++
 			query["offset"] = strconv.Itoa(offset)
 			resp, e := client.RunBotRequest(query)
 
@@ -152,6 +155,14 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 				break
 			}
 		}
+
+		fmt.Println("REQUEST:")
+		fmt.Println("SELECT " + query["fields"])
+		fmt.Println("FROM " + query["tables"])
+		fmt.Println("WHERE " + query["where"])
+		fmt.Println("JOIN ON " + query["join_on"])
+		fmt.Println("ORDER BY " + query["order_by"])
+		fmt.Printf("Request count: %d\n", requests)
 
 		return parsedResponse
 	}
