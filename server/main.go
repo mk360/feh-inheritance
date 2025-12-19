@@ -10,9 +10,9 @@ import (
 	"inheritance/queries"
 	"inheritance/structs"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
-	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -33,8 +33,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 	return corsMiddleware
 }
-
-func 
 
 func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
