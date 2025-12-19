@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -32,6 +33,8 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 	return corsMiddleware
 }
+
+func 
 
 func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
@@ -58,6 +61,11 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 }
 
 func searchHeroes(response http.ResponseWriter, request *http.Request) {
+	ip, _, err := net.SplitHostPort(request.RemoteAddr)
+	if err != nil {
+		return
+	}
+	fmt.Println(ip)
 	request.ParseForm()
 	var searchQuery = strings.ToLower(request.Form.Get("query"))
 	const PAGE_SIZE int = 100
@@ -175,11 +183,11 @@ func main() {
 	var imgRoute = http.HandlerFunc(getHeroUrl)
 	var namesRoute = http.HandlerFunc(findNames)
 	var healthRoute = http.HandlerFunc(healthEndpoint)
-	mux.Handle("/skills", corsMiddleware(inheritableSkills))
-	mux.Handle("/heroes", corsMiddleware(heroesRoute))
-	mux.Handle("/names", corsMiddleware(namesRoute))
-	mux.Handle("/img", corsMiddleware(imgRoute))
-	mux.Handle("/health", corsMiddleware(healthRoute))
+	mux.Handle("/skills", inheritableSkills)
+	mux.Handle("/heroes", heroesRoute)
+	mux.Handle("/names", namesRoute)
+	mux.Handle("/img", imgRoute)
+	mux.Handle("/health", healthRoute)
 	fmt.Println("Listening to port 3333")
-	http.ListenAndServe("localhost:3333", mux)
+	http.ListenAndServe("localhost:3333", corsMiddleware(mux))
 }
