@@ -16,6 +16,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	dotenv "github.com/joho/godotenv"
 )
 
 var skillsArr = []string{"A", "B", "C", "X", "weapon", "assist", "special"}
@@ -25,8 +27,9 @@ var COLORS [4]string = [4]string{"Red", "Blue", "Green", "Colorless"}
 var VARIED_COLORS_WEAPONS [5]string = [5]string{"Bow", "Tome", "Breath", "Beast", "Dagger"}
 
 func corsMiddleware(next http.Handler) http.Handler {
+	dotenv.Load("./.env")
 	var corsMiddleware = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Add("Access-Control-Allow-Origin", "*")
+		writer.Header().Add("Access-Control-Allow-Origin", os.Getenv("CORS_DOMAIN"))
 		writer.Header().Add("Access-Control-Allow-Methods", "GET")
 		next.ServeHTTP(writer, request)
 	})
