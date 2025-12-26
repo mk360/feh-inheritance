@@ -7,4 +7,7 @@ require (
 	github.com/antonholmquist/jason v1.0.0
 )
 
-require github.com/mrjones/oauth v0.0.0-20190623134757-126b35219450 // indirect
+require (
+	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/mrjones/oauth v0.0.0-20190623134757-126b35219450 // indirect
+)

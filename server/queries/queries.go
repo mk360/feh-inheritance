@@ -83,6 +83,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 		query["order_by"] = "Skills.Name ASC, Unit ASC"
 		query["limit"] = "500"
 		query["where"] = strings.Join(conditions, " and ")
+		fmt.Println(query["where"])
 		delete(query, "group_by")
 
 		var offset int = 0

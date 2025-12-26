@@ -16,6 +16,7 @@
     const API_URL = "https://api.feh-inheritance.tonion-the-onion.com";
     let lastCheckedHero;
 
+
     let searchQuery = "";
     let page = 0;
     let currentFilter = "";
