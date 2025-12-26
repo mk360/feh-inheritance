@@ -14,6 +14,7 @@
     const CLEAR_BUTTON = document.getElementById("clear");
 
     const API_URL = "https://api.feh-inheritance.tonion-the-onion.com";
+
     let lastCheckedHero;
 
 
