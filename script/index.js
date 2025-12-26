@@ -311,6 +311,8 @@
             targetPortrait.alt = "";
             targetPortrait.src = `${API_URL}/img?id=${unitId}&imgType=battle`;
 
+            skillList.Skills = compactTOON36ToJson(skillList.Skills);
+
             if (!Object.keys(skillList.Skills).length) {
                 const noUnits = document.createElement("div");
                 noUnits.classList.add("donor-banner");
@@ -479,6 +481,36 @@
             }
         }
     }
+
+    function compactTOON36ToJson(toonStr) {
+        const lines = toonStr
+            .split('\n')
+            .map(l => l.trim())
+            .filter(Boolean);
+
+        const json = {};
+
+        for (let i = 1; i < lines.length; i++) { // skip header
+            const line = lines[i];
+            const [key, rest] = line.split(':');
+            if (!rest) continue;
+
+            const parts = rest.split(',');
+            const ids = parts[0]
+                .split('|')
+                .map(s => parseInt(s, 36));
+
+            const obj = { ids };
+
+            if (parts[1]) obj.icon = parts[1];
+            if (parts[2]) obj.SP = Number(parseInt(parts[2], 36));
+
+            json[key] = obj;
+        }
+
+        return json;
+    }
+
 
     function createBarracksItem(barracksEntry) {
         const item = createHeroItem(barracksEntry.id, true, barracksEntry.name);

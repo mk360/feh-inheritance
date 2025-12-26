@@ -7,6 +7,7 @@ import (
 	"inheritance/client"
 	"inheritance/common"
 	"inheritance/structs"
+	"inheritance/utils"
 	"log"
 	"regexp"
 	"slices"
@@ -70,8 +71,10 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 
 	var conditions = []string{"Next is null", "Units.Properties holds not \"story\"", "CanUseMove holds \"" + moveType + "\"", "CanUseWeapon holds \"" + weaponType + "\"", "Exclusive = false", "Units.Properties holds not \"enemy\"", "Scategory = \"" + convertSlotName(slot) + "\"", "IntID in (" + strings.Join(withoutSelf, ",") + ")"}
 
+	var skillMap = map[string]structs.SkillInfos{}
+
 	var parsedResponse = structs.SearchSkillsResponse{
-		Skills:   map[string]structs.SkillInfos{},
+		Skills:   "",
 		Units:    map[int]string{},
 		Searched: singleUnitData.CargoQuery[0].Title.Unit,
 	}
@@ -104,10 +107,10 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 			json.Unmarshal(data, &skillResponse)
 
 			for _, responseTitle := range skillResponse.CargoQuery {
-				_, ok := parsedResponse.Skills[responseTitle.Title.Name]
+				_, ok := skillMap[responseTitle.Title.Name]
 				var intSP, _ = strconv.ParseFloat(responseTitle.Title.SP, 32)
 				if !ok {
-					parsedResponse.Skills[responseTitle.Title.Name] = structs.SkillInfos{
+					skillMap[responseTitle.Title.Name] = structs.SkillInfos{
 						Ids:  []int{},
 						Icon: strings.Replace(responseTitle.Title.Icon, ".png", "", 1),
 						SP:   int(intSP * 1.5),
@@ -116,12 +119,12 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 
 				conv, _ := strconv.Atoi(responseTitle.Title.IntID)
 
-				skillDictIds := parsedResponse.Skills[responseTitle.Title.Name]
+				skillDictIds := skillMap[responseTitle.Title.Name]
 				if !array.Includes(skillDictIds.Ids, conv) {
 					skillDictIds.Ids = append(skillDictIds.Ids, conv)
 				}
 
-				parsedResponse.Skills[responseTitle.Title.Name] = skillDictIds
+				skillMap[responseTitle.Title.Name] = skillDictIds
 
 				matches := wikiNameReplacementRegex.FindStringSubmatch(responseTitle.Title.Required)
 				// cases like "Fort. Def/Res 2" need special treatment because the "Required" field actually uses the WikiName, not the real name
@@ -136,10 +139,10 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 					patchedName = firstStringHalf + "/" + secondStringHalf
 				}
 
-				currentLearners, requiredSkillExists := parsedResponse.Skills[patchedName]
+				currentLearners, requiredSkillExists := skillMap[patchedName]
 
-				if requiredSkillExists && array.Equals(currentLearners.Ids, parsedResponse.Skills[responseTitle.Title.Name].Ids) {
-					delete(parsedResponse.Skills, patchedName)
+				if requiredSkillExists && array.Equals(currentLearners.Ids, skillMap[responseTitle.Title.Name].Ids) {
+					delete(skillMap, patchedName)
 				}
 
 				_, unitOk := parsedResponse.Units[conv]
@@ -164,7 +167,7 @@ func GetInheritableSkills(intIDs []string, searchedIntID string, slot string) st
 		fmt.Println("JOIN ON " + query["join_on"])
 		fmt.Println("ORDER BY " + query["order_by"])
 		fmt.Printf("Request count: %d\n", requests)
-
+		parsedResponse.Skills, _ = utils.JsonToToon(skillMap)
 		return parsedResponse
 	}
 

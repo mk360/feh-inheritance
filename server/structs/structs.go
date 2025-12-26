@@ -22,7 +22,7 @@ type SkillInfos struct {
 }
 
 type SearchSkillsResponse struct {
-	Skills   map[string]SkillInfos
+	Skills   string
 	Units    map[int]string `json:"units"`
 	Searched string         `json:"searched"`
 }
