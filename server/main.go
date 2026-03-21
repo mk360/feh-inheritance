@@ -9,8 +9,9 @@ import (
 	"inheritance/common"
 	"inheritance/queries"
 	"inheritance/structs"
+	"inheritance/utils"
 	"io"
-	"net"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -62,11 +63,6 @@ func getInheritableSkills(response http.ResponseWriter, req *http.Request) {
 }
 
 func searchHeroes(response http.ResponseWriter, request *http.Request) {
-	ip, _, err := net.SplitHostPort(request.RemoteAddr)
-	if err != nil {
-		return
-	}
-	fmt.Println(ip)
 	request.ParseForm()
 	var searchQuery = strings.ToLower(request.Form.Get("query"))
 	const PAGE_SIZE int = 100
@@ -106,12 +102,16 @@ func findNames(response http.ResponseWriter, request *http.Request) {
 
 func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
-	if len(request.Form["id"]) == 0 {
+	var imgType = request.Form.Get("imgType")
+	if len(request.Form["id"]) == 0 || (imgType != "battle" && imgType != "portrait") {
 		response.WriteHeader(400)
 		return
 	}
+	var _, e = strconv.Atoi(request.Form.Get("id"))
+	if e != nil {
+		response.WriteHeader(400)
+	}
 
-	var imgType = request.Form.Get("imgType")
 	_, err := os.Stat("./cache/" + imgType)
 	if err != nil {
 		os.Mkdir("./cache/"+imgType, 0644)
@@ -121,7 +121,6 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 
 	_, fileErr := os.Stat(filePath)
 	if fileErr != nil {
-
 		query := map[string]string{
 			"action": "cargoquery",
 			"format": "json",
@@ -140,9 +139,12 @@ func getHeroUrl(response http.ResponseWriter, request *http.Request) {
 			response.WriteHeader(404)
 			return
 		}
-		var url = "https://feheroes.fandom.com/wiki/Special:Redirect/file/" + url.QueryEscape(strings.ReplaceAll(unmarshaled.CargoQuery[0].Title.Page, " ", "_")) + convertImageType(imgType) + ".webp"
-		imageCDNLocation, _ := http.Get(url)
-
+		var imageURL = utils.GetCharacterAssetPath(url.QueryEscape(strings.ReplaceAll(unmarshaled.CargoQuery[0].Title.Page, " ", "_")) + convertImageType(imgType) + ".webp")
+		imageCDNLocation, err := http.Get(imageURL)
+		if err != nil {
+			log.Println(err)
+			response.Write([]byte("{}"))
+		}
 		defer imageCDNLocation.Body.Close()
 		imageByteData, _ := io.ReadAll(imageCDNLocation.Body)
 		os.WriteFile(filePath, imageByteData, 0644)
